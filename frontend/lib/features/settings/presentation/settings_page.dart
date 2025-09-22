@@ -3,6 +3,10 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+codex/implement-features-from-familycal-readme-j006u0
+import 'package:flutter/services.dart';
+=======
+main
 
 import 'package:familycal/features/calendar/widgets/color_picker.dart';
 import 'package:familycal/models/calendar.dart';
@@ -41,6 +45,10 @@ class _SettingsPageState extends State<SettingsPage> {
   final _icsController = TextEditingController();
   bool _isGeneratingInvite = false;
   bool _isImportingIcs = false;
+codex/implement-features-from-familycal-readme-j006u0
+  bool _isExportingIcs = false;
+=======
+main
   bool _isRequestingNotifications = false;
   String? _inviteCode;
   String? _selectedCalendarId;
@@ -207,6 +215,69 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+codex/implement-features-from-familycal-readme-j006u0
+  Future<void> _exportIcs() async {
+    if (_selectedCalendarId == null) {
+      return;
+    }
+    setState(() {
+      _isExportingIcs = true;
+    });
+    try {
+      final ics = await _functionsService.exportIcs(_selectedCalendarId!);
+      if (!mounted) {
+        return;
+      }
+      final parentContext = context;
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('ICS Export'),
+            content: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480, maxHeight: 320),
+              child: SingleChildScrollView(
+                child: SelectableText(ics),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: ics));
+                  Navigator.of(dialogContext).pop();
+                  if (mounted) {
+                    ScaffoldMessenger.of(parentContext).showSnackBar(
+                      const SnackBar(content: Text('ICS kopiert.')),
+                    );
+                  }
+                },
+                child: const Text('In Zwischenablage'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Schließen'),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Fehler beim Export: $error')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isExportingIcs = false;
+        });
+      }
+    }
+  }
+
+=======
+main
   Future<void> _registerNotifications() async {
     setState(() {
       _isRequestingNotifications = true;
@@ -410,9 +481,21 @@ class _SettingsPageState extends State<SettingsPage> {
                                 : const Text('Import starten'),
                           ),
                           const SizedBox(height: 12),
+codex/implement-features-from-familycal-readme-j006u0
+                          FilledButton.tonal(
+                            onPressed: _isExportingIcs ? null : _exportIcs,
+                            child: _isExportingIcs
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Text('Export anzeigen'),
+=======
                           Text(
                             'Export: Nutze den Cloud Function Endpunkt `exportIcs` oder binde die Firestore Daten in dein bevorzugtes Kalender-Tool ein.',
                             style: Theme.of(context).textTheme.bodySmall,
+main
                           ),
                         ],
                       );

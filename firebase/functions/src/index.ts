@@ -76,6 +76,16 @@ function formatIcsDate(date: Date): string {
   return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 }
 
+codex/implement-features-from-familycal-readme-j006u0
+function formatDateKey(date: Date): string {
+  const year = date.getFullYear().toString().padStart(4, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}${month}${day}`;
+}
+
+=======
+main
 export const scheduleEventReminders = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Login erforderlich');
@@ -272,6 +282,130 @@ export const birthdayUpdater = functions.pubsub.schedule('0 2 * * *').onRun(asyn
   return null;
 });
 
+codex/implement-features-from-familycal-readme-j006u0
+export const aggregateAvailabilities = functions.firestore
+  .document('availabilities/{docId}')
+  .onWrite(async (change, context) => {
+    const after = change.after.exists ? change.after.data() : null;
+    const before = change.before.exists ? change.before.data() : null;
+    const householdId = (after?.householdId as string | undefined) ?? (before?.householdId as string | undefined);
+    const dateKey = (after?.dateKey as string | undefined) ?? (before?.dateKey as string | undefined);
+    if (!householdId || !dateKey) {
+      return null;
+    }
+
+    const snapshot = await db
+      .collection('availabilities')
+      .where('householdId', '==', householdId)
+      .where('dateKey', '==', dateKey)
+      .get();
+
+    if (snapshot.empty) {
+      await db
+        .collection('availabilitySummaries')
+        .doc(`${householdId}_${dateKey}`)
+        .delete()
+        .catch(() => null);
+      return null;
+    }
+
+    let availableMembers = 0;
+    let earliestStart: number | null = null;
+    let latestEnd: number | null = null;
+
+    snapshot.forEach((doc) => {
+      const slots = (doc.data().slots as Array<Record<string, unknown>> | undefined) ?? [];
+      if (slots.length > 0) {
+        availableMembers += 1;
+      }
+      slots.forEach((slot) => {
+        const start = Number(slot.startMinutes ?? 0);
+        const end = Number(slot.endMinutes ?? 0);
+        if (earliestStart === null || start < earliestStart) {
+          earliestStart = start;
+        }
+        if (latestEnd === null || end > latestEnd) {
+          latestEnd = end;
+        }
+      });
+    });
+
+    const payload: Record<string, unknown> = {
+      householdId,
+      dateKey,
+      availableMembers,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    if (earliestStart !== null) {
+      payload.earliestStartMinutes = earliestStart;
+    } else {
+      payload.earliestStartMinutes = admin.firestore.FieldValue.delete();
+    }
+    if (latestEnd !== null) {
+      payload.latestEndMinutes = latestEnd;
+    } else {
+      payload.latestEndMinutes = admin.firestore.FieldValue.delete();
+    }
+
+    await db
+      .collection('availabilitySummaries')
+      .doc(`${householdId}_${dateKey}`)
+      .set(payload, {merge: true});
+    return null;
+  });
+
+export const taskReminderWorker = functions.pubsub.schedule('0 7 * * *').onRun(async () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayKey = formatDateKey(today);
+  const dueSnapshot = await db
+    .collection('tasks')
+    .where('isCompleted', '==', false)
+    .where('dueDate', '<=', admin.firestore.Timestamp.fromDate(today))
+    .limit(20)
+    .get();
+
+  const messaging = admin.messaging();
+  for (const doc of dueSnapshot.docs) {
+    const data = doc.data();
+    const assignees = (data.assigneeIds as string[]) ?? [];
+    if (assignees.length === 0) {
+      continue;
+    }
+    const lastReminderKey = data.lastReminderKey as string | undefined;
+    if (lastReminderKey === todayKey) {
+      continue;
+    }
+    const tokens = await collectParticipantTokens(assignees);
+    if (tokens.length === 0) {
+      continue;
+    }
+    const title = (data.title as string) ?? 'Aufgabe';
+    const dueDate = (data.dueDate as admin.firestore.Timestamp | undefined)?.toDate();
+    const householdId = (data.householdId as string) ?? '';
+    await messaging.sendEachForMulticast({
+      tokens,
+      notification: {
+        title: 'Aufgabe fällig',
+        body: dueDate
+          ? `${title} war fällig am ${dueDate.toLocaleDateString('de-DE')}`
+          : `${title} ist überfällig`,
+      },
+      data: {
+        taskId: doc.id,
+        householdId,
+      },
+    });
+    await doc.ref.update({
+      lastReminderKey: todayKey,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  }
+  return null;
+});
+
+=======
+main
 export const cleanup = functions.pubsub.schedule('30 3 * * *').onRun(async () => {
   const now = admin.firestore.Timestamp.now();
   const inviteSnapshot = await db

@@ -3,12 +3,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:familycal/features/calendar/presentation/agenda_view.dart';
+codex/implement-features-from-familycal-readme-j006u0
+import 'package:familycal/features/calendar/presentation/availability_view.dart';
+=======
+main
 import 'package:familycal/features/calendar/presentation/birthday_tab.dart';
 import 'package:familycal/features/calendar/presentation/day_view.dart';
 import 'package:familycal/features/calendar/presentation/event_editor_sheet.dart';
 import 'package:familycal/features/calendar/presentation/month_view.dart';
 import 'package:familycal/features/calendar/presentation/week_view.dart';
 import 'package:familycal/features/settings/presentation/settings_page.dart';
+codex/implement-features-from-familycal-readme-j006u0
+import 'package:familycal/features/tasks/presentation/task_board_page.dart';
+=======
+main
 import 'package:familycal/models/household.dart';
 import 'package:familycal/models/membership.dart';
 
@@ -73,6 +81,10 @@ class _CalendarShellPageState extends State<CalendarShellPage> {
           WeekView(household: _selectedHousehold),
           DayView(household: _selectedHousehold),
           AgendaView(household: _selectedHousehold),
+codex/implement-features-from-familycal-readme-j006u0
+          AvailabilityView(household: _selectedHousehold, user: widget.user),
+=======
+main
           BirthdayTab(household: _selectedHousehold),
         ];
         return Scaffold(
@@ -155,6 +167,14 @@ class _CalendarShellPageState extends State<CalendarShellPage> {
                 label: 'Agenda',
               ),
               NavigationDestination(
+codex/implement-features-from-familycal-readme-j006u0
+                icon: Icon(Icons.groups_outlined),
+                selectedIcon: Icon(Icons.groups),
+                label: 'Verfügbarkeit',
+              ),
+              NavigationDestination(
+=======
+main
                 icon: Icon(Icons.cake_outlined),
                 selectedIcon: Icon(Icons.cake),
                 label: 'Geburtstage',
@@ -201,6 +221,25 @@ class _CalendarShellPageState extends State<CalendarShellPage> {
                         },
                       ),
                       ListTile(
+codex/implement-features-from-familycal-readme-j006u0
+                        leading: const Icon(Icons.task_alt_outlined),
+                        title: const Text('Aufgaben'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => TaskBoardPage(
+                                householdId: _selectedHousehold.id,
+                                householdName: _selectedHousehold.name,
+                                user: widget.user,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+=======
+main
                         leading: const Icon(Icons.notifications_active_outlined),
                         title: const Text('Benachrichtigungen'),
                         subtitle: const Text('FCM-Berechtigungen verwalten'),
