@@ -32,6 +32,26 @@ CI/CD: GitHub Actions + Firebase CLI
 
 ---
 
+## Projektstatus & Setup
+
+- **Phase 0:** Abgeschlossen – Vision und Leitplanken in [`docs/phase0.md`](docs/phase0.md).
+- **Phase 1 & 2:** Grundgerüst und MVP-Basis umgesetzt – siehe [`docs/phase1_phase2.md`](docs/phase1_phase2.md).
+- **Phase 3 & 4:** Kalenderkern, Event-Editor, Push-Benachrichtigungen sowie Firebase-Functions und Security-Rules fertiggestellt – siehe [`docs/phase3_phase4.md`](docs/phase3_phase4.md).
+- **Phase 5 & 6:** QA/Release-Automatisierung, Verfügbarkeiten & Aufgabenboard implementiert – siehe [`docs/phase5_phase6.md`](docs/phase5_phase6.md).
+
+### Lokales Setup (Phase 1)
+1. Flutter SDK installieren (mind. 3.16).
+2. Abhängigkeiten installieren: `cd frontend && flutter pub get`.
+3. Firebase konfigurieren gemäß [`firebase/setup.md`](firebase/setup.md) und generierte Optionen in `lib/services/firebase/firebase_options.dart` ersetzen.
+4. App starten: `flutter run -d chrome` oder gewünschtes Gerät.
+
+### Nächste Schritte (Phase 5+)
+- Release-Checkliste befolgen (`docs/release_checklist.md`), Builds signieren und Store-Listing vorbereiten.
+- Erweiterte Analytics, Monitoring sowie Nutzer-Feedback-Schleifen.
+- Roadmap 1.1.0 (ICS Verbesserungen), 1.2.0 (Task Insights) & 2.0.0 (Externe Kalender) prüfen.
+
+---
+
 3. Funktionen
 
 Kernfeatures
@@ -57,6 +77,8 @@ ICS Import/Export
 Geburtstagstab: automatisch generierte jährliche Events mit Altersberechnung
 
 Kategorien: Geschäftlich, Privat, Essen, Feier, Konzert, Urlaub, Besuch (erweiterbar)
+
+Aufgabenboard mit Status, Fälligkeiten und Haushaltszuweisung
 
 
 Event-Rechte
@@ -111,6 +133,10 @@ Name, Geburtsdatum, wiederkehrender Event mit Altersberechnung
 
 availabilities/{uid}_{dateISO}: Tagesverfügbarkeiten
 
+availabilitySummaries/{hid}_{dateISO}: Aggregierte Slots je Haushalt & Tag
+
+tasks/{tid}: Aufgaben inkl. Status, Verantwortlichen und Due-Date
+
 invites/{token}: Einladungen für neue Mitglieder (nur Admin)
 
 deviceTokens/{uid}/{tokenId}: Push-Token
@@ -130,6 +156,10 @@ importICS: ICS-Dateien parsen und in Events konvertieren
 birthdayUpdater: erstellt jährliche Geburtstags-Events, aktualisiert Alter
 
 cleanup: Alte/canceled Events bereinigen
+
+aggregateAvailabilities: wertet Tagesverfügbarkeiten aus und speichert Zusammenfassungen
+
+taskReminderWorker: tägliche Prüfung überfälliger Aufgaben und Push-Reminder
 
 
 Sicherheit
@@ -157,13 +187,16 @@ lib/
     auth/
     household/
     calendar/
-      views/ (Month, Week, Day, Agenda, BirthdayTab)
+      views/ (Month, Week, Day, Agenda, BirthdayTab, Availability)
       controllers/ (Firestore Streams, RRULE Parser)
       widgets/ (EventCard, EventEditor, CategoryChips, ColorPicker)
+    tasks/
+      presentation/ (TaskBoard, TaskEditor)
   services/
     firestore_service.dart
     functions_service.dart
     notifications_service.dart
+    repositories/ (events, households, memberships, calendars, availabilities, tasks)
   models/
     user.dart
     household.dart
@@ -172,6 +205,8 @@ lib/
     role.dart
     birthday.dart
     recurrence.dart
+    availability.dart
+    task.dart
   utils/
     tz.dart
     date_math.dart

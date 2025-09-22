@@ -1,0 +1,112 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userId() {
+      return request.auth.uid;
+    }
+
+    function membershipId(String hid, String uid) {
+      return hid + '_' + uid;
+    }
+
+    function isHouseholdMember(String hid) {
+      return exists(/databases/$(database)/documents/memberships/$(membershipId(hid, userId())));
+    }
+
+    function isHouseholdAdmin(String hid) {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/memberships/$(membershipId(hid, userId()))) &&
+        get(/databases/$(database)/documents/memberships/$(membershipId(hid, userId()))).data.isAdmin == true;
+    }
+
+    match /users/{uid} {
+      allow read: if isSignedIn() && (uid == userId());
+      allow create: if isSignedIn() && (uid == userId());
+      allow update: if isSignedIn() && (uid == userId());
+    }
+
+    match /households/{hid} {
+      allow read: if isSignedIn() && isHouseholdMember(hid);
+      allow create: if isSignedIn();
+      allow update: if isHouseholdAdmin(hid);
+    }
+
+    match /memberships/{membershipId} {
+      allow read: if isSignedIn() &&
+        (membershipId.split('_')[1] == userId() ||
+          isHouseholdAdmin(membershipId.split('_')[0]));
+      allow create: if isSignedIn() && request.resource.data.userId == userId();
+      allow update: if isSignedIn() &&
+        (request.resource.data.userId == userId() ||
+          isHouseholdAdmin(request.resource.data.householdId));
+      allow delete: if isSignedIn() &&
+        isHouseholdAdmin(resource.data.householdId);
+    }
+
+    match /calendars/{cid} {
+      function calendarHouseholdId() {
+        return request.resource != null && request.resource.data.householdId != null
+          ? request.resource.data.householdId
+          : (resource != null ? resource.data.householdId : null);
+      }
+
+      allow read: if isSignedIn() && calendarHouseholdId() != null && isHouseholdMember(calendarHouseholdId());
+      allow create: if isSignedIn() && isHouseholdMember(request.resource.data.householdId);
+      allow update, delete: if isSignedIn() && calendarHouseholdId() != null && isHouseholdMember(calendarHouseholdId());
+    }
+
+    match /calendars/{cid}/events/{eid} {
+      function eventHouseholdId() {
+        return request.resource != null && request.resource.data.householdId != null
+          ? request.resource.data.householdId
+          : (resource != null ? resource.data.householdId : null);
+      }
+
+      allow read: if isSignedIn() && eventHouseholdId() != null && isHouseholdMember(eventHouseholdId());
+      allow create, update, delete: if isSignedIn() && eventHouseholdId() != null && isHouseholdMember(eventHouseholdId());
+    }
+
+    match /birthdays/{uid} {
+      allow read, write: if isSignedIn() && uid == userId();
+    }
+
+    match /availabilities/{docId} {
+      allow read, write: if isSignedIn() && docId.split('_')[0] == userId();
+    }
+
+    match /availabilitySummaries/{docId} {
+      function summaryHouseholdId() {
+        return docId.split('_')[0];
+      }
+
+      allow read: if isSignedIn() && isHouseholdMember(summaryHouseholdId());
+      allow write: if false;
+    }
+
+    match /tasks/{taskId} {
+      function taskHouseholdId() {
+        return request.resource != null && request.resource.data.householdId != null
+          ? request.resource.data.householdId
+          : (resource != null ? resource.data.householdId : null);
+      }
+
+      allow read: if isSignedIn() && taskHouseholdId() != null && isHouseholdMember(taskHouseholdId());
+      allow create: if isSignedIn() && isHouseholdMember(request.resource.data.householdId);
+      allow update, delete: if isSignedIn() && taskHouseholdId() != null && isHouseholdMember(taskHouseholdId());
+    }
+
+    match /invites/{token} {
+      allow create: if isSignedIn() && isHouseholdAdmin(request.resource.data.householdId);
+      allow read: if true;
+      allow delete: if isSignedIn() && isHouseholdAdmin(resource.data.householdId);
+    }
+
+    match /deviceTokens/{uid}/{tokenId} {
+      allow read, write: if isSignedIn() && uid == userId();
+    }
+  }
+}
