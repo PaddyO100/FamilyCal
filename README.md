@@ -37,7 +37,10 @@ CI/CD: GitHub Actions + Firebase CLI
 - **Phase 0:** Abgeschlossen – Vision und Leitplanken in [`docs/phase0.md`](docs/phase0.md).
 - **Phase 1 & 2:** Grundgerüst und MVP-Basis umgesetzt – siehe [`docs/phase1_phase2.md`](docs/phase1_phase2.md).
 - **Phase 3 & 4:** Kalenderkern, Event-Editor, Push-Benachrichtigungen sowie Firebase-Functions und Security-Rules fertiggestellt – siehe [`docs/phase3_phase4.md`](docs/phase3_phase4.md).
+codex/implement-features-from-familycal-readme-j006u0
 - **Phase 5 & 6:** QA/Release-Automatisierung, Verfügbarkeiten & Aufgabenboard implementiert – siehe [`docs/phase5_phase6.md`](docs/phase5_phase6.md).
+=======
+main
 
 ### Lokales Setup (Phase 1)
 1. Flutter SDK installieren (mind. 3.16).
@@ -46,9 +49,14 @@ CI/CD: GitHub Actions + Firebase CLI
 4. App starten: `flutter run -d chrome` oder gewünschtes Gerät.
 
 ### Nächste Schritte (Phase 5+)
+codex/implement-features-from-familycal-readme-j006u0
 - Release-Checkliste befolgen (`docs/release_checklist.md`), Builds signieren und Store-Listing vorbereiten.
 - Erweiterte Analytics, Monitoring sowie Nutzer-Feedback-Schleifen.
 - Roadmap 1.1.0 (ICS Verbesserungen), 1.2.0 (Task Insights) & 2.0.0 (Externe Kalender) prüfen.
+=======
+- Stabilisierung, automatisierte Tests und Store-Release-Vorbereitung.
+- Erweiterte Analytics, Monitoring sowie Nutzer-Feedback-Schleifen.
+main
 
 ---
 

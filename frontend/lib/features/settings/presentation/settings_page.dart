@@ -3,7 +3,10 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+codex/implement-features-from-familycal-readme-j006u0
 import 'package:flutter/services.dart';
+=======
+main
 
 import 'package:familycal/features/calendar/widgets/color_picker.dart';
 import 'package:familycal/models/calendar.dart';
@@ -42,7 +45,10 @@ class _SettingsPageState extends State<SettingsPage> {
   final _icsController = TextEditingController();
   bool _isGeneratingInvite = false;
   bool _isImportingIcs = false;
+codex/implement-features-from-familycal-readme-j006u0
   bool _isExportingIcs = false;
+=======
+main
   bool _isRequestingNotifications = false;
   String? _inviteCode;
   String? _selectedCalendarId;
@@ -209,6 +215,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+codex/implement-features-from-familycal-readme-j006u0
   Future<void> _exportIcs() async {
     if (_selectedCalendarId == null) {
       return;
@@ -269,6 +276,8 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+=======
+main
   Future<void> _registerNotifications() async {
     setState(() {
       _isRequestingNotifications = true;
@@ -472,6 +481,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 : const Text('Import starten'),
                           ),
                           const SizedBox(height: 12),
+codex/implement-features-from-familycal-readme-j006u0
                           FilledButton.tonal(
                             onPressed: _isExportingIcs ? null : _exportIcs,
                             child: _isExportingIcs
@@ -481,6 +491,11 @@ class _SettingsPageState extends State<SettingsPage> {
                                     child: CircularProgressIndicator(strokeWidth: 2),
                                   )
                                 : const Text('Export anzeigen'),
+=======
+                          Text(
+                            'Export: Nutze den Cloud Function Endpunkt `exportIcs` oder binde die Firestore Daten in dein bevorzugtes Kalender-Tool ein.',
+                            style: Theme.of(context).textTheme.bodySmall,
+main
                           ),
                         ],
                       );

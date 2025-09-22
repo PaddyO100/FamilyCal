@@ -60,12 +60,17 @@ Im Ordner `firebase/functions` liegt ein vorkonfiguriertes TypeScript-Projekt mi
 - `reminderWorker` (Pub/Sub, minütlich): sendet FCM-Notifications an registrierte Tokens.
 - `importIcs` (Callable): importiert ICS-Feeds in einen Kalender.
 - `birthdayUpdater` (täglich 02:00 Uhr): aktualisiert die Alters-/Terminangaben in `birthdays`.
+codex/implement-features-from-familycal-readme-j006u0
 - `aggregateAvailabilities` (Firestore Trigger): aggregiert Tagesverfügbarkeiten in `availabilitySummaries`.
 - `taskReminderWorker` (täglich 07:00 Uhr): erinnert zugewiesene Mitglieder an überfällige Aufgaben.
 - `cleanup` (täglich 03:30 Uhr): löscht abgelaufene Einladungen und erledigte Reminder.
 
 > Hinweis: Für `watchHouseholdTasks` (Sortierung nach `isCompleted` + `dueDate`) sowie `aggregateAvailabilities` werden Firestore-Indizes benötigt. Die CLI meldet fehlende Indizes mit Direktlinks.
 
+=======
+- `cleanup` (täglich 03:30 Uhr): löscht abgelaufene Einladungen und erledigte Reminder.
+
+main
 ### Installation & lokale Entwicklung
 ```bash
 cd firebase/functions
@@ -130,8 +135,11 @@ Stelle sicher, dass Firestore, Auth und Functions lokal laufen. Trage die Emulat
 - Speichere Firebase-CLI-Token als GitHub Action Secret `FIREBASE_TOKEN`.
 - Hinterlege Apple/Play-Store-Credentials für spätere Deployments.
 - Lege `.env`-Dateien für lokale Entwicklung an (`frontend/.env.example`).
+codex/implement-features-from-familycal-readme-j006u0
 - Aktiviere das Workflow-Deployment (`.github/workflows/flutter_ci.yml`) und verknüpfe es mit Firebase Hosting (Preview & Live).
 - Befolge vor jedem Release die Schritte in [`docs/release_checklist.md`](../docs/release_checklist.md).
+=======
+main
 - Ergänze optionale Secrets für Functions (`ICS_IMPORT_URLS`, SMTP etc.), falls Reminder/Import automatisiert laufen sollen.
 
 Nach Durchführung dieser Schritte ist Firebase vollständig vorbereitet, damit die Flutter-App mit Authentifizierung, Firestore, Functions, Messaging und den neuen Reminder-/ICS-Workflows interagieren kann.
