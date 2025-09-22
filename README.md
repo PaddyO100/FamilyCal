@@ -32,6 +32,24 @@ CI/CD: GitHub Actions + Firebase CLI
 
 ---
 
+## Projektstatus & Setup
+
+- **Phase 0:** Abgeschlossen – Vision und Leitplanken in [`docs/phase0.md`](docs/phase0.md).
+- **Phase 1 & 2:** Grundgerüst und MVP-Basis umgesetzt – siehe [`docs/phase1_phase2.md`](docs/phase1_phase2.md).
+- **Phase 3 & 4:** Kalenderkern, Event-Editor, Push-Benachrichtigungen sowie Firebase-Functions und Security-Rules fertiggestellt – siehe [`docs/phase3_phase4.md`](docs/phase3_phase4.md).
+
+### Lokales Setup (Phase 1)
+1. Flutter SDK installieren (mind. 3.16).
+2. Abhängigkeiten installieren: `cd frontend && flutter pub get`.
+3. Firebase konfigurieren gemäß [`firebase/setup.md`](firebase/setup.md) und generierte Optionen in `lib/services/firebase/firebase_options.dart` ersetzen.
+4. App starten: `flutter run -d chrome` oder gewünschtes Gerät.
+
+### Nächste Schritte (Phase 5+)
+- Stabilisierung, automatisierte Tests und Store-Release-Vorbereitung.
+- Erweiterte Analytics, Monitoring sowie Nutzer-Feedback-Schleifen.
+
+---
+
 3. Funktionen
 
 Kernfeatures
