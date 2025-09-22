@@ -78,6 +78,7 @@ service cloud.firestore {
       allow read, write: if isSignedIn() && docId.split('_')[0] == userId();
     }
 
+codex/implement-features-from-familycal-readme
     match /availabilitySummaries/{docId} {
       function summaryHouseholdId() {
         return docId.split('_')[0];
@@ -99,6 +100,8 @@ service cloud.firestore {
       allow update, delete: if isSignedIn() && taskHouseholdId() != null && isHouseholdMember(taskHouseholdId());
     }
 
+=======
+main
     match /invites/{token} {
       allow create: if isSignedIn() && isHouseholdAdmin(request.resource.data.householdId);
       allow read: if true;

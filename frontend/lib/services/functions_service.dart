@@ -25,6 +25,7 @@ class FunctionsService {
       'calendarId': calendarId,
     });
   }
+codex/implement-features-from-familycal-readme
 
   Future<String> exportIcs(String calendarId) async {
     final callable = _functions.httpsCallable('exportIcs');
@@ -37,4 +38,6 @@ class FunctionsService {
     }
     throw StateError('Ungültige Antwort vom exportIcs Endpoint.');
   }
+=======
+main
 }
