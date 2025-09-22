@@ -1,0 +1,287 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
+import 'package:familycal/features/tasks/presentation/task_editor_sheet.dart';
+import 'package:familycal/models/membership.dart';
+import 'package:familycal/models/task.dart';
+import 'package:familycal/services/repositories/task_repository.dart';
+
+class TaskBoardPage extends StatefulWidget {
+  const TaskBoardPage({
+    super.key,
+    required this.householdId,
+    required this.householdName,
+    required this.user,
+  });
+
+  final String householdId;
+  final String householdName;
+  final User user;
+
+  @override
+  State<TaskBoardPage> createState() => _TaskBoardPageState();
+}
+
+class _TaskBoardPageState extends State<TaskBoardPage> {
+  late TaskRepository _repository;
+  late Stream<List<Membership>> _membersStream;
+
+  @override
+  void initState() {
+    super.initState();
+    final firestore = FirebaseFirestore.instance;
+    _repository = TaskRepository(firestore);
+    _membersStream = firestore
+        .collection('memberships')
+        .where('householdId', isEqualTo: widget.householdId)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => Membership.fromFirestore(doc))
+              .toList(),
+        );
+  }
+
+  Future<void> _toggleTask(HouseholdTask task, bool value) async {
+    await _repository.updateTask(task.copyWith(isCompleted: value));
+  }
+
+  Future<void> _deleteTask(HouseholdTask task) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Aufgabe löschen?'),
+          content: Text('"${task.title}" wird dauerhaft entfernt.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Abbrechen'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Löschen'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed == true) {
+      await _repository.deleteTask(task.id);
+    }
+  }
+
+  void _openEditor(List<Membership> members, [HouseholdTask? task]) {
+    TaskEditorSheet.show(
+      context,
+      repository: _repository,
+      householdId: widget.householdId,
+      createdBy: widget.user.uid,
+      members: members,
+      task: task,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<Membership>>(
+      stream: _membersStream,
+      builder: (context, memberSnapshot) {
+        final members = memberSnapshot.data ?? const <Membership>[];
+        return StreamBuilder<List<HouseholdTask>>(
+          stream: _repository.watchHouseholdTasks(widget.householdId),
+          builder: (context, taskSnapshot) {
+            if (!taskSnapshot.hasData) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            final tasks = taskSnapshot.data!;
+            final openTasks = tasks.where((task) => !task.isCompleted).toList();
+            final completedTasks = tasks.where((task) => task.isCompleted).toList();
+
+            return Scaffold(
+              appBar: AppBar(
+                title: Text('Aufgaben · ${widget.householdName}'),
+              ),
+              floatingActionButton: FloatingActionButton.extended(
+                onPressed: () => _openEditor(members),
+                icon: const Icon(Icons.add_task),
+                label: const Text('Neue Aufgabe'),
+              ),
+              body: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                children: [
+                  _TaskSection(
+                    title: 'Offene Aufgaben',
+                    tasks: openTasks,
+                    members: members,
+                    onToggle: _toggleTask,
+                    onEdit: (task) => _openEditor(members, task),
+                    onDelete: _deleteTask,
+                  ),
+                  const SizedBox(height: 24),
+                  _TaskSection(
+                    title: 'Erledigt',
+                    tasks: completedTasks,
+                    members: members,
+                    onToggle: _toggleTask,
+                    onEdit: (task) => _openEditor(members, task),
+                    onDelete: _deleteTask,
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _TaskSection extends StatelessWidget {
+  const _TaskSection({
+    required this.title,
+    required this.tasks,
+    required this.members,
+    required this.onToggle,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final String title;
+  final List<HouseholdTask> tasks;
+  final List<Membership> members;
+  final Future<void> Function(HouseholdTask task, bool complete) onToggle;
+  final void Function(HouseholdTask task) onEdit;
+  final Future<void> Function(HouseholdTask task) onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(width: 8),
+                Chip(label: Text('${tasks.length}')),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (tasks.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Text('Nichts zu tun – gut gemacht!'),
+              )
+            else
+              ...tasks.map(
+                (task) => Column(
+                  children: [
+                    CheckboxListTile(
+                      value: task.isCompleted,
+                      onChanged: (value) => onToggle(task, value ?? false),
+                      title: Text(task.title),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (task.description != null && task.description!.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(task.description!),
+                            ),
+                          if (task.dueDate != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                'Fällig bis ${MaterialLocalizations.of(context).formatMediumDate(task.dueDate!)}',
+                                style: TextStyle(
+                                  color: task.isCompleted
+                                      ? Theme.of(context).colorScheme.outline
+                                      : Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                          if (task.assigneeIds.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Wrap(
+                                spacing: 6,
+                                children: task.assigneeIds
+                                    .map(
+                                      (id) => _AssigneeChip(
+                                        member: members.firstWhere(
+                                          (member) => member.userId == id,
+                                          orElse: () => Membership(
+                                            id: id,
+                                            householdId: '',
+                                            userId: id,
+                                            roleId: 'unknown',
+                                            roleName: 'Mitglied',
+                                            roleColor: '#E0E0E0',
+                                            isAdmin: false,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                              ),
+                            ),
+                        ],
+                      ),
+                      secondary: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined),
+                            onPressed: () => onEdit(task),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline),
+                            onPressed: () => onDelete(task),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (task != tasks.last)
+                      const Divider(
+                        height: 1,
+                        indent: 16,
+                        endIndent: 16,
+                      ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AssigneeChip extends StatelessWidget {
+  const _AssigneeChip({required this.member});
+
+  final Membership member;
+
+  @override
+  Widget build(BuildContext context) {
+    return Chip(
+      avatar: CircleAvatar(
+        backgroundColor: Color(int.parse(member.roleColor.replaceFirst('#', '0xff'))),
+        child: Text(
+          member.roleName.isEmpty ? '?' : member.roleName.substring(0, 1).toUpperCase(),
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+      label: Text(member.roleName),
+    );
+  }
+}
