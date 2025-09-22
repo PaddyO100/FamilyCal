@@ -1,0 +1,15 @@
+# Firebase Functions dependencies
+firebase/functions/node_modules/
+
+# Flutter build outputs
+frontend/build/
+frontend/.dart_tool/
+frontend/.packages
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/.metadata
+
+# Root-level build artifacts
+build/
+.dart_tool/
+.packages

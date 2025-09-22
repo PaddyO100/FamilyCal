@@ -16,6 +16,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Ensure no merge conflict markers
+        run: |
+          if git -C .. grep -n '^[<=>]\{7\} ' -- ':!firebase/functions/node_modules/**'; then
+            echo "::error::Merge conflict markers detected. Please resolve them before merging."
+            exit 1
+          fi
+
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
