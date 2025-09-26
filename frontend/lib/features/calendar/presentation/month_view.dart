@@ -29,71 +29,94 @@ class _MonthViewState extends State<MonthView> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: CalendarDatePicker(
-            initialDate: _focusedDay,
-            firstDate: DateTime(_focusedDay.year - 2),
-            lastDate: DateTime(_focusedDay.year + 2),
-            onDateChanged: (date) {
-              setState(() {
-                _focusedDay = date;
-              });
-            },
-          ),
-        ),
-        Expanded(
-          child: StreamBuilder<List<CalendarEvent>>(
-            stream: _repository.watchEvents(
-              householdId: widget.household.id,
-              from: DateTime(_focusedDay.year, _focusedDay.month, _focusedDay.day),
-              to: DateTime(_focusedDay.year, _focusedDay.month, _focusedDay.day, 23, 59, 59),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableHeight = constraints.maxHeight.isFinite
+            ? constraints.maxHeight
+            : MediaQuery.of(context).size.height;
+        final pickerHeight = (availableHeight * 0.45).clamp(260.0, 360.0);
+        return Column(
+          children: [
+            SizedBox(
+              height: pickerHeight,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: CalendarDatePicker(
+                  initialDate: _focusedDay,
+                  firstDate: DateTime(_focusedDay.year - 2),
+                  lastDate: DateTime(_focusedDay.year + 2),
+                  onDateChanged: (date) {
+                    setState(() {
+                      _focusedDay = date;
+                    });
+                  },
+                ),
+              ),
             ),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              final events = snapshot.data ?? <CalendarEvent>[];
-              if (events.isEmpty) {
-                return Center(
-                  child: Text(
-                    'Keine Termine am ${DateMath.formatDay(_focusedDay)}',
-                    textAlign: TextAlign.center,
-                  ),
-                );
-              }
-
-              return ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemBuilder: (context, index) {
-                  final event = events[index];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      child: Text(
-                        event.start.hour.toString().padLeft(2, '0'),
-                        style: const TextStyle(color: Colors.white),
+            Expanded(
+              child: StreamBuilder<List<CalendarEvent>>(
+                stream: _repository.watchEvents(
+                  householdId: widget.household.id,
+                  from: DateTime(_focusedDay.year, _focusedDay.month, _focusedDay.day),
+                  to: DateTime(_focusedDay.year, _focusedDay.month, _focusedDay.day, 23, 59, 59),
+                ),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          'Termine konnten nicht geladen werden.\n${snapshot.error}',
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    ),
-                    title: Text(event.title),
-                    subtitle: Text(DateMath.formatTimeRange(event.start, event.end)),
-                    onTap: () => EventEditorSheet.show(
-                      context,
-                      household: widget.household,
-                      initialEvent: event,
-                    ),
+                    );
+                  }
+                  if (snapshot.connectionState == ConnectionState.waiting &&
+                      !snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final events = snapshot.data ?? <CalendarEvent>[];
+                  if (events.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'Keine Termine am ${DateMath.formatDay(_focusedDay)}',
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemBuilder: (context, index) {
+                      final event = events[index];
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          child: Text(
+                            event.start.hour.toString().padLeft(2, '0'),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        title: Text(event.title),
+                        subtitle: Text(DateMath.formatTimeRange(event.start, event.end)),
+                        onTap: () => EventEditorSheet.show(
+                          context,
+                          household: widget.household,
+                          initialEvent: event,
+                        ),
+                      );
+                    },
+                    separatorBuilder: (context, index) => const SizedBox(height: 8),
+                    itemCount: events.length,
                   );
                 },
-                separatorBuilder: (context, index) => const SizedBox(height: 8),
-                itemCount: events.length,
-              );
-            },
-          ),
-        ),
-      ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

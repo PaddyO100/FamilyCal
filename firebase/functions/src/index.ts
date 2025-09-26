@@ -3,57 +3,6 @@ import * as functions from 'firebase-functions';
 admin.initializeApp();
 const db = admin.firestore();
 
-interface ParsedIcsEvent {
-  summary: string;
-  start: Date;
-  end: Date;
-  location?: string;
-  description?: string;
-}
-
-function parseIcsTimestamp(value: string): Date {
-  const sanitized = value.trim();
-  if (sanitized.endsWith('Z')) {
-    return new Date(sanitized);
-  }
-  if (sanitized.length === 8) {
-    const year = Number(sanitized.substring(0, 4));
-    const month = Number(sanitized.substring(4, 6));
-    const day = Number(sanitized.substring(6, 8));
-    return new Date(Date.UTC(year, month - 1, day));
-  }
-  const year = Number(sanitized.substring(0, 4));
-  const month = Number(sanitized.substring(4, 6));
-  const day = Number(sanitized.substring(6, 8));
-  const hour = Number(sanitized.substring(9, 11));
-  const minute = Number(sanitized.substring(11, 13));
-  return new Date(Date.UTC(year, month - 1, day, hour, minute));
-}
-
-function parseIcsEvents(ics: string): ParsedIcsEvent[] {
-  const events: ParsedIcsEvent[] = [];
-  const blocks = ics.split('BEGIN:VEVENT').slice(1);
-  for (const block of blocks) {
-    const section = block.split('END:VEVENT')[0];
-    const summaryMatch = section.match(/SUMMARY:(.*)/);
-    const startMatch = section.match(/DTSTART[^:]*:([0-9TZ]+)/i);
-    const endMatch = section.match(/DTEND[^:]*:([0-9TZ]+)/i);
-    if (!summaryMatch || !startMatch || !endMatch) {
-      continue;
-    }
-    const locationMatch = section.match(/LOCATION:(.*)/);
-    const descriptionMatch = section.match(/DESCRIPTION:(.*)/);
-    events.push({
-      summary: summaryMatch[1].trim(),
-      start: parseIcsTimestamp(startMatch[1]),
-      end: parseIcsTimestamp(endMatch[1]),
-      location: locationMatch ? locationMatch[1].trim() : undefined,
-      description: descriptionMatch ? descriptionMatch[1].trim() : undefined,
-    });
-  }
-  return events;
-}
-
 async function collectParticipantTokens(userIds: string[]): Promise<string[]> {
   const tokens = new Set<string>();
   for (const uid of userIds) {
@@ -70,10 +19,6 @@ async function collectParticipantTokens(userIds: string[]): Promise<string[]> {
     });
   }
   return Array.from(tokens);
-}
-
-function formatIcsDate(date: Date): string {
-  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 }
 
 function formatDateKey(date: Date): string {
@@ -162,94 +107,6 @@ export const reminderWorker = functions.pubsub.schedule('* * * * *').onRun(async
     await doc.ref.update({sent: true, sentAt: admin.firestore.FieldValue.serverTimestamp()});
   }
   return null;
-});
-
-export const importIcs = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Login erforderlich');
-  }
-  const url = data.url as string | undefined;
-  const calendarId = data.calendarId as string | undefined;
-  if (!url || !calendarId) {
-    throw new functions.https.HttpsError('invalid-argument', 'URL und Kalender-ID sind erforderlich');
-  }
-  const calendarSnapshot = await db.collection('calendars').doc(calendarId).get();
-  if (!calendarSnapshot.exists) {
-    throw new functions.https.HttpsError('not-found', 'Kalender existiert nicht');
-  }
-  const calendarData = calendarSnapshot.data() ?? {};
-  const householdId = calendarData.householdId as string;
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new functions.https.HttpsError('internal', 'ICS konnte nicht geladen werden');
-  }
-  const icsContent = await response.text();
-  const events = parseIcsEvents(icsContent);
-  const batch = db.batch();
-  const eventsCollection = db.collection('calendars').doc(calendarId).collection('events');
-  events.forEach((event) => {
-    const eventRef = eventsCollection.doc();
-    batch.set(eventRef, {
-      calendarId,
-      householdId,
-      title: event.summary,
-      start: admin.firestore.Timestamp.fromDate(event.start),
-      end: admin.firestore.Timestamp.fromDate(event.end),
-      category: 'import',
-      visibility: 'household',
-      participantIds: [],
-      location: event.location ?? null,
-      notes: event.description ?? null,
-    });
-  });
-  await batch.commit();
-  return {imported: events.length};
-});
-
-export const exportIcs = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Login erforderlich');
-  }
-  const calendarId = data.calendarId as string | undefined;
-  if (!calendarId) {
-    throw new functions.https.HttpsError('invalid-argument', 'Kalender-ID fehlt');
-  }
-  const eventsSnapshot = await db
-    .collection('calendars')
-    .doc(calendarId)
-    .collection('events')
-    .orderBy('start')
-    .limit(200)
-    .get();
-
-  const lines = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//FamilyCal//EN',
-  ];
-  eventsSnapshot.forEach((doc) => {
-    const data = doc.data();
-    const start = (data.start as admin.firestore.Timestamp).toDate();
-    const end = (data.end as admin.firestore.Timestamp).toDate();
-    lines.push('BEGIN:VEVENT');
-    lines.push(`UID:${doc.id}@familycal.app`);
-    lines.push(`DTSTAMP:${formatIcsDate(new Date())}`);
-    lines.push(`DTSTART:${formatIcsDate(start)}`);
-    lines.push(`DTEND:${formatIcsDate(end)}`);
-    lines.push(`SUMMARY:${data.title}`);
-    if (data.location) {
-      lines.push(`LOCATION:${data.location}`);
-    }
-    if (data.notes) {
-      lines.push(`DESCRIPTION:${data.notes}`);
-    }
-    if (data.recurrenceRule) {
-      lines.push(`RRULE:${data.recurrenceRule}`);
-    }
-    lines.push('END:VEVENT');
-  });
-  lines.push('END:VCALENDAR');
-  return {ics: lines.join('\n')};
 });
 
 export const birthdayUpdater = functions.pubsub.schedule('0 2 * * *').onRun(async () => {

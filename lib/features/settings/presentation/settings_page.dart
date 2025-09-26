@@ -1,19 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-import 'package:familycal/config/firebase_features.dart';
 import 'package:familycal/features/calendar/widgets/color_picker.dart';
-import 'package:familycal/models/calendar.dart';
 import 'package:familycal/models/household.dart';
 import 'package:familycal/models/membership.dart';
 import 'package:familycal/models/role.dart';
-import 'package:familycal/services/functions_service.dart';
 import 'package:familycal/services/notifications_service.dart';
-import 'package:familycal/services/repositories/calendar_repository.dart';
 import 'package:familycal/services/repositories/household_repository.dart';
 import 'package:familycal/services/repositories/membership_repository.dart';
 
@@ -36,17 +30,10 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   late final MembershipRepository _membershipRepository;
   late final HouseholdRepository _householdRepository;
-  FunctionsService? _functions;
   late final NotificationsService _notifications;
-  late final CalendarRepository _calendarRepository;
-
-  final _icsController = TextEditingController();
   String? _inviteCode;
-  String? _selectedCalendarId;
 
   bool _generating = false;
-  bool _importing = false;
-  bool _exporting = false;
   bool _notifying = false;
 
   @override
@@ -55,16 +42,11 @@ class _SettingsPageState extends State<SettingsPage> {
     final firestore = FirebaseFirestore.instance;
     _membershipRepository = MembershipRepository(firestore);
     _householdRepository = HouseholdRepository(firestore);
-    _calendarRepository = CalendarRepository(firestore);
-    if (cloudFunctionsEnabled) {
-      _functions = FunctionsService(FirebaseFunctions.instance);
-    }
     _notifications = NotificationsService(FirebaseMessaging.instance);
   }
 
   @override
   void dispose() {
-    _icsController.dispose();
     super.dispose();
   }
 
@@ -132,125 +114,6 @@ class _SettingsPageState extends State<SettingsPage> {
     } finally {
       if (mounted) {
         setState(() => _notifying = false);
-      }
-    }
-  }
-
-  Future<void> _importIcs() async {
-    if (_selectedCalendarId == null) {
-      return;
-    }
-
-    final url = _icsController.text.trim();
-    if (url.isEmpty) {
-      return;
-    }
-
-    if (!cloudFunctionsEnabled || _functions == null) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cloud Functions sind deaktiviert. ICS Import ist derzeit nicht verfügbar.'),
-        ),
-      );
-      return;
-    }
-
-    setState(() => _importing = true);
-    try {
-      await _functions!.triggerIcsImport(url, _selectedCalendarId!);
-
-      if (!mounted) {
-        return;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ICS Import gestartet.')),
-      );
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Fehler: $error')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _importing = false);
-      }
-    }
-  }
-
-  Future<void> _exportIcs() async {
-    if (_selectedCalendarId == null) {
-      return;
-    }
-
-    if (!cloudFunctionsEnabled || _functions == null) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cloud Functions sind deaktiviert. ICS Export ist derzeit nicht verfügbar.'),
-        ),
-      );
-      return;
-    }
-
-    setState(() => _exporting = true);
-    try {
-      final ics = await _functions!.exportIcs(_selectedCalendarId!);
-
-      if (!mounted) {
-        return;
-      }
-
-      await showDialog<void>(
-        context: context,
-        builder: (dialogContext) {
-          return AlertDialog(
-            title: const Text('ICS Export'),
-            content: SizedBox(
-              width: 480,
-              child: SingleChildScrollView(child: SelectableText(ics)),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: ics));
-                  Navigator.of(dialogContext).pop();
-                  if (!mounted) {
-                    return;
-                  }
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('ICS kopiert.')),
-                  );
-                },
-                child: const Text('In Zwischenablage'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Schließen'),
-              ),
-            ],
-          );
-        },
-      );
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Fehler: $error')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _exporting = false);
       }
     }
   }
@@ -432,104 +295,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-              Text('ICS Import/Export', style: theme.textTheme.headlineSmall),
-              const SizedBox(height: 12),
-              if (cloudFunctionsEnabled && _functions != null)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: StreamBuilder<List<HouseholdCalendar>>(
-                      stream: _calendarRepository.watchCalendars(widget.household.id),
-                      builder: (context, calendarSnapshot) {
-                        final calendars =
-                            calendarSnapshot.data ?? <HouseholdCalendar>[];
-                        if (calendars.isEmpty) {
-                          return const Text(
-                            'Bitte zuerst einen Kalender anlegen.',
-                          );
-                        }
-
-                        _selectedCalendarId ??= calendars.first.id;
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            DropdownButtonFormField<String>(
-                              value: _selectedCalendarId,
-                              decoration:
-                                  const InputDecoration(labelText: 'Zielkalender'),
-                              items: calendars
-                                  .map(
-                                    (calendar) => DropdownMenuItem(
-                                      value: calendar.id,
-                                      child: Text(calendar.name),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (value) => setState(() {
-                                _selectedCalendarId = value;
-                              }),
-                            ),
-                            const SizedBox(height: 12),
-                            TextField(
-                              controller: _icsController,
-                              decoration: const InputDecoration(
-                                labelText: 'ICS Feed URL',
-                                hintText: 'https://example.com/calendar.ics',
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            FilledButton(
-                              onPressed: _importing ? null : _importIcs,
-                              child: _importing
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Text('Import starten'),
-                            ),
-                            FilledButton.tonal(
-                              onPressed: _exporting ? null : _exportIcs,
-                              child: _exporting
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Text('Export anzeigen'),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                )
-              else
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'ICS Import/Export ist derzeit deaktiviert.',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Diese Funktion benötigt Firebase Cloud Functions. '
-                          'Aktiviere sie in den Firebase-Einstellungen oder aktualisiere auf einen Tarif mit Functions-Unterstützung.',
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
             ],
           );
         },

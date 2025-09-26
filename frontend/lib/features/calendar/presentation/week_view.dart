@@ -42,20 +42,30 @@ class _WeekViewState extends State<WeekView> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
                 icon: const Icon(Icons.chevron_left),
                 onPressed: () => _changeWeek(-1),
               ),
-              Column(
-                children: [
-                  Text(
-                    '${MaterialLocalizations.of(context).formatMediumDate(_weekStart)} – ${MaterialLocalizations.of(context).formatMediumDate(weekEnd)}',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  Text('${widget.household.name} · Woche'),
-                ],
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${MaterialLocalizations.of(context).formatMediumDate(_weekStart)} – ${MaterialLocalizations.of(context).formatMediumDate(weekEnd)}',
+                      style: Theme.of(context).textTheme.titleMedium,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      '${widget.household.name} · Woche',
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_right),
@@ -72,10 +82,24 @@ class _WeekViewState extends State<WeekView> {
               to: weekEnd,
             ),
             builder: (context, snapshot) {
-              if (!snapshot.hasData) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      'Wochentermine konnten nicht geladen werden.\n${snapshot.error}',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              }
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  !snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
-              final events = snapshot.data!;
+              final events = List<CalendarEvent>.from(
+                snapshot.data ?? const <CalendarEvent>[],
+              );
               final days = List.generate(7, (index) {
                 final day = _weekStart.add(Duration(days: index));
                 final dayEvents = events

@@ -27,23 +27,43 @@ class _AvailabilityViewState extends State<AvailabilityView> {
     final to = _selectedDate.add(const Duration(days: 7));
     final dateKey = DailyAvailability.dateKey(_selectedDate);
     return Column(children:[
-      Padding(padding: const EdgeInsets.symmetric(horizontal:16, vertical:12), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children:[
+      Padding(padding: const EdgeInsets.symmetric(horizontal:16, vertical:12), child: Row(children:[
         IconButton(icon: const Icon(Icons.chevron_left), onPressed: ()=> _changeDay(-1)),
-        Column(children:[
-          Text(MaterialLocalizations.of(context).formatFullDate(_selectedDate), style: Theme.of(context).textTheme.titleMedium),
-          Text('${widget.household.name} · Verfügbarkeiten')
-        ]),
+        Expanded(child: Column(mainAxisSize: MainAxisSize.min, children:[
+          Text(
+            MaterialLocalizations.of(context).formatFullDate(_selectedDate),
+            style: Theme.of(context).textTheme.titleMedium,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            '${widget.household.name} · Verfügbarkeiten',
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          )
+        ])),
         IconButton(icon: const Icon(Icons.chevron_right), onPressed: ()=> _changeDay(1)),
       ])),
       Expanded(child: StreamBuilder<List<AvailabilitySummary>>(
         stream: _repository.watchHouseholdSummaries(householdId: widget.household.id, from: from, to: to),
         builder: (context, summarySnapshot){
+          if (summarySnapshot.hasError) {
+            return Center(child: Padding(padding: const EdgeInsets.all(24), child: Text('Verfügbarkeiten konnten nicht geladen werden.\n${summarySnapshot.error}', textAlign: TextAlign.center)));
+          }
+          if (summarySnapshot.connectionState == ConnectionState.waiting && !summarySnapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
           final summaries = summarySnapshot.data ?? const <AvailabilitySummary>[];
           final summary = summaries.firstWhere((s)=> s.dateKey == dateKey, orElse: ()=> AvailabilitySummary(id:'', householdId: widget.household.id, dateKey: dateKey, availableMembers: 0));
           return StreamBuilder<List<DailyAvailability>>(
             stream: _repository.watchUserAvailabilities(userId: widget.user.uid, from: from, to: to),
             builder: (context, availabilitySnapshot){
-              if (!availabilitySnapshot.hasData && !summarySnapshot.hasData) {
+              if (availabilitySnapshot.hasError) {
+                return Center(child: Padding(padding: const EdgeInsets.all(24), child: Text('Eigene Verfügbarkeiten konnten nicht geladen werden.\n${availabilitySnapshot.error}', textAlign: TextAlign.center)));
+              }
+              if (availabilitySnapshot.connectionState == ConnectionState.waiting && !availabilitySnapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
               final myAvailabilities = availabilitySnapshot.data ?? const <DailyAvailability>[];

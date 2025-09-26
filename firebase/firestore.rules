@@ -17,6 +17,10 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/memberships/$(membershipId(hid, userId())));
     }
 
+    function membershipDocUserId(mid) {
+      return mid.split('_').size() == 2 ? mid.split('_')[1] : '';
+    }
+
     function isHouseholdAdmin(hid) {
       return isSignedIn() &&
         exists(/databases/$(database)/documents/memberships/$(membershipId(hid, userId()))) &&
@@ -36,13 +40,20 @@ service cloud.firestore {
     }
 
     match /memberships/{membershipId} {
-      allow read: if isSignedIn() &&
-        ((resource.data.userId == userId()) ||
-          isHouseholdAdmin(resource.data.householdId));
-      allow create: if isSignedIn() && request.resource.data.userId == userId();
-      allow update: if isSignedIn() &&
-        (request.resource.data.userId == userId() ||
-          isHouseholdAdmin(request.resource.data.householdId));
+      allow read: if isSignedIn() && (
+        (resource != null &&
+          ((resource.data.userId == userId()) ||
+            isHouseholdMember(resource.data.householdId))) ||
+        (resource == null && membershipDocUserId(membershipId) == userId())
+      );
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == userId() ||
+        isHouseholdAdmin(request.resource.data.householdId)
+      );
+      allow update: if isSignedIn() && (
+        request.resource.data.userId == userId() ||
+        isHouseholdAdmin(request.resource.data.householdId)
+      );
       allow delete: if isSignedIn() &&
         isHouseholdAdmin(resource.data.householdId);
     }

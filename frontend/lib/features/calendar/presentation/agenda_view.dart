@@ -36,7 +36,19 @@ class _AgendaViewState extends State<AgendaView> {
         to: now.add(const Duration(days: 30)),
       ),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                'Agenda konnte nicht geladen werden.\n${snapshot.error}',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        }
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
 

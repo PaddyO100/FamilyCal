@@ -1,32 +1,42 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import 'package:familycal/features/calendar/presentation/availability_editor_sheet.dart';
-import 'package:familycal/models/availability.dart';
-import 'package:familycal/models/household.dart';
-import 'package:familycal/services/repositories/availability_repository.dart';
-import 'package:familycal/utils/date_math.dart';
-
-class AvailabilityView extends StatefulWidget {
-  const AvailabilityView({
-    super.key,
-    required this.household,
-    required this.user,
-  });
-
-  final Household household;
-  final User user;
-
-  @override
-  State<AvailabilityView> createState() => _AvailabilityViewState();
-}
-
-class _AvailabilityViewState extends State<AvailabilityView> {
-  late AvailabilityRepository _repository;
-  late DateTime _selectedDate;
-
-  @override
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left),
+                onPressed: () => _changeDay(-1),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      MaterialLocalizations.of(context)
+                          .formatFullDate(_selectedDate),
+                      style: Theme.of(context).textTheme.titleMedium,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      '${widget.household.name} · Verfügbarkeiten',
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right),
+                onPressed: () => _changeDay(1),
+              ),
+            ],
+          ),
+        ),
   void initState() {
     super.initState();
     _repository = AvailabilityRepository(FirebaseFirestore.instance);
@@ -80,6 +90,21 @@ class _AvailabilityViewState extends State<AvailabilityView> {
               to: to,
             ),
             builder: (context, summarySnapshot) {
+              if (summarySnapshot.hasError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      'Verfügbarkeiten konnten nicht geladen werden.\n${summarySnapshot.error}',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              }
+              if (summarySnapshot.connectionState == ConnectionState.waiting &&
+                  !summarySnapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
               final summaries = summarySnapshot.data ?? const <AvailabilitySummary>[];
               final summary = summaries.firstWhere(
                 (item) => item.dateKey == dateKey,
@@ -97,7 +122,19 @@ class _AvailabilityViewState extends State<AvailabilityView> {
                   to: to,
                 ),
                 builder: (context, availabilitySnapshot) {
-                  if (!availabilitySnapshot.hasData && !summarySnapshot.hasData) {
+                  if (availabilitySnapshot.hasError) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          'Eigene Verfügbarkeiten konnten nicht geladen werden.\n${availabilitySnapshot.error}',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    );
+                  }
+                  if (availabilitySnapshot.connectionState == ConnectionState.waiting &&
+                      !availabilitySnapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
                   final myAvailabilities = availabilitySnapshot.data ?? const <DailyAvailability>[];

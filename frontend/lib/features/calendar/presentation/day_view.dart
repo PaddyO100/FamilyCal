@@ -43,21 +43,31 @@ class _DayViewState extends State<DayView> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
                 icon: const Icon(Icons.chevron_left),
                 onPressed: () => _changeDay(-1),
               ),
-              Column(
-                children: [
-                  Text(
-                    MaterialLocalizations.of(context)
-                        .formatFullDate(_selectedDate),
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  Text('${widget.household.name} · Tag'),
-                ],
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      MaterialLocalizations.of(context)
+                          .formatFullDate(_selectedDate),
+                      style: Theme.of(context).textTheme.titleLarge,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      '${widget.household.name} · Tag',
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_right),
@@ -74,11 +84,24 @@ class _DayViewState extends State<DayView> {
               to: rangeEnd,
             ),
             builder: (context, snapshot) {
-              if (!snapshot.hasData) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      'Termine konnten nicht geladen werden.\n${snapshot.error}',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              }
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  !snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
-              final events = snapshot.data!
-                ..sort((a, b) => a.start.compareTo(b.start));
+              final events = List<CalendarEvent>.from(
+                snapshot.data ?? const <CalendarEvent>[],
+              )..sort((a, b) => a.start.compareTo(b.start));
 
               if (events.isEmpty) {
                 return Center(
