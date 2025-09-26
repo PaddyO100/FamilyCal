@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "402596558785",
+    "project_id": "familycal-prod",
+    "storage_bucket": "familycal-prod.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:402596558785:android:44373b3dd0e4019ffd6140",
+        "android_client_info": {
+          "package_name": "com.prod.familycal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "402596558785-ihqikjutnn418oi1o06nqamebng0a2tl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.prod.familycal",
+            "certificate_hash": "7ae8e17abf455efafdcaef8915411caa69ea1002"
+          }
+        },
+        {
+          "client_id": "402596558785-v6drgr0qdg30irl3q4tfg80vin8r7rd8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUdlXAO607lbboJc3GDuzZkIYKrLNhBDg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "402596558785-v6drgr0qdg30irl3q4tfg80vin8r7rd8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "402596558785-13nopslut4c1oa0u3dmsokas2a1kq4nb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.familycal"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

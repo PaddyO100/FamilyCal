@@ -9,15 +9,15 @@ service cloud.firestore {
       return request.auth.uid;
     }
 
-    function membershipId(String hid, String uid) {
+    function membershipId(hid, uid) {
       return hid + '_' + uid;
     }
 
-    function isHouseholdMember(String hid) {
+    function isHouseholdMember(hid) {
       return exists(/databases/$(database)/documents/memberships/$(membershipId(hid, userId())));
     }
 
-    function isHouseholdAdmin(String hid) {
+    function isHouseholdAdmin(hid) {
       return isSignedIn() &&
         exists(/databases/$(database)/documents/memberships/$(membershipId(hid, userId()))) &&
         get(/databases/$(database)/documents/memberships/$(membershipId(hid, userId()))).data.isAdmin == true;
@@ -37,8 +37,8 @@ service cloud.firestore {
 
     match /memberships/{membershipId} {
       allow read: if isSignedIn() &&
-        (membershipId.split('_')[1] == userId() ||
-          isHouseholdAdmin(membershipId.split('_')[0]));
+        ((resource.data.userId == userId()) ||
+          isHouseholdAdmin(resource.data.householdId));
       allow create: if isSignedIn() && request.resource.data.userId == userId();
       allow update: if isSignedIn() &&
         (request.resource.data.userId == userId() ||
@@ -78,7 +78,6 @@ service cloud.firestore {
       allow read, write: if isSignedIn() && docId.split('_')[0] == userId();
     }
 
-codex/implement-features-from-familycal-readme-j006u0
     match /availabilitySummaries/{docId} {
       function summaryHouseholdId() {
         return docId.split('_')[0];
@@ -100,8 +99,6 @@ codex/implement-features-from-familycal-readme-j006u0
       allow update, delete: if isSignedIn() && taskHouseholdId() != null && isHouseholdMember(taskHouseholdId());
     }
 
-=======
-main
     match /invites/{token} {
       allow create: if isSignedIn() && isHouseholdAdmin(request.resource.data.householdId);
       allow read: if true;

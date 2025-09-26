@@ -1,310 +1,122 @@
-Projektübersicht: FamilyCal – Ein geteilter Familienkalender
+# FamilyCal
 
-1. Zielsetzung
+FamilyCal ist ein gemeinsamer Familienkalender für moderne Haushalte. Die App vereint Terminplanung, Aufgaben, Verfügbarkeiten und Geburtstage in einer aufgeräumten Oberfläche und synchronisiert Daten in Echtzeit über Firebase.
 
-FamilyCal ist ein gemeinsamer, haushaltsorientierter Kalender, der die Schwächen des Google-Familienkalenders adressiert. Fokus liegt auf:
-
-Intuitive, moderne UI (ShadCN/Tailwind-inspirierte Designs)
-
-Multi-Plattform (Android, iOS, Web als PWA)
-
-Offline-first mit Firebase Firestore Sync
-
-Frei definierbare Rollen & Farben
-
-Wiederholungen, Ausnahmen, Erinnerungen, Geburtstagsübersicht und Kategorien
-
-
+> **Mission:** Stressfreie Familienorganisation dank smarter Kalender- und Aufgabenautomatisierung auf allen Geräten.
 
 ---
 
-2. Tech Stack
+## 🧭 Überblick
 
-Frontend: Flutter (Material 3 + ShadCN/Tailwind-inspiriertes UI)
-
-Backend: Firebase (Auth, Firestore, Functions, FCM)
-
-Hosting: Firebase Hosting (für Web-PWA)
-
-CI/CD: GitHub Actions + Firebase CLI
-
-
+- **Plattformen:** Flutter-App für Android, iOS, Web (PWA), macOS und Windows.
+- **Sync & Offline:** Firestore-Replikation, Konfliktauflösung, lokales Caching.
+- **Automatisierung:** Cloud Functions für Erinnerungen, ICS-Import/-Export, Geburtstage und Aufgaben-Reminder.
+- **Design:** Material 3 mit ShadCN-/Tailwind-inspirierter Ästhetik, rollenbasierte Farben, barrierearme Interaktionen.
 
 ---
 
-## Projektstatus & Setup
+## ✨ Highlights
 
-- **Phase 0:** Abgeschlossen – Vision und Leitplanken in [`docs/phase0.md`](docs/phase0.md).
-- **Phase 1 & 2:** Grundgerüst und MVP-Basis umgesetzt – siehe [`docs/phase1_phase2.md`](docs/phase1_phase2.md).
-- **Phase 3 & 4:** Kalenderkern, Event-Editor, Push-Benachrichtigungen sowie Firebase-Functions und Security-Rules fertiggestellt – siehe [`docs/phase3_phase4.md`](docs/phase3_phase4.md).
-codex/implement-features-from-familycal-readme-j006u0
-- **Phase 5 & 6:** QA/Release-Automatisierung, Verfügbarkeiten & Aufgabenboard implementiert – siehe [`docs/phase5_phase6.md`](docs/phase5_phase6.md).
-=======
-main
-
-### Lokales Setup (Phase 1)
-1. Flutter SDK installieren (mind. 3.16).
-2. Abhängigkeiten installieren: `cd frontend && flutter pub get`.
-3. Firebase konfigurieren gemäß [`firebase/setup.md`](firebase/setup.md) und generierte Optionen in `lib/services/firebase/firebase_options.dart` ersetzen.
-4. App starten: `flutter run -d chrome` oder gewünschtes Gerät.
-
-### Nächste Schritte (Phase 5+)
-codex/implement-features-from-familycal-readme-j006u0
-- Release-Checkliste befolgen (`docs/release_checklist.md`), Builds signieren und Store-Listing vorbereiten.
-- Erweiterte Analytics, Monitoring sowie Nutzer-Feedback-Schleifen.
-- Roadmap 1.1.0 (ICS Verbesserungen), 1.2.0 (Task Insights) & 2.0.0 (Externe Kalender) prüfen.
-=======
-- Stabilisierung, automatisierte Tests und Store-Release-Vorbereitung.
-- Erweiterte Analytics, Monitoring sowie Nutzer-Feedback-Schleifen.
-main
+- Mehrere Haushalte mit flexiblen Rollenfarben, Einladungen per Code & Admin-Werkzeugen.
+- Kalender in Monats-, Wochen-, Tages- und Agenda-Ansicht inkl. Wiederholungen (RRULE), Ausnahmen, privaten/öffentlichen Terminen und Push-Erinnerungen.
+- Aufgaben-Board mit Status, Fälligkeiten, Verantwortlichen, Beschreibung und Erinnerungsworkflow.
+- Verfügbarkeitsplaner sammelt Slots der Mitglieder, aggregiert sie automatisch und zeigt freie Zeitfenster.
+- Geburtstags-Tab samt automatischer Altersberechnung und täglichen Updates.
+- ICS-Import/-Export, damit externe Kalender integriert oder exportiert werden können.
+- Benachrichtigungen via Firebase Cloud Messaging inkl. gerätespezifischer Token-Verwaltung.
 
 ---
 
-3. Funktionen
+## ✅ Implementierte Funktionen
 
-Kernfeatures
-
-Haushaltsverwaltung (1 Admin, beliebig viele Mitglieder)
-
-Rollen: Namen und Farben frei wählbar; Admin ist unveränderlich, alle anderen Rollen individuell benennbar (z. B. „Mama“, „Papa“, „Kind“).
-
-Mehrere Kalender pro Haushalt
-
-Events mit Wiederholung (RRULE) und Ausnahmen
-
-Sichtbarkeit: privat, Haushalt, öffentlich
-
-Erinnerungen via Push (FCM)
-
-Offline-Modus + Konfliktmerge
-
-Verfügbarkeiten für „Wann können wir?“
-
-ICS Import/Export
-
-Geburtstagstab: automatisch generierte jährliche Events mit Altersberechnung
-
-Kategorien: Geschäftlich, Privat, Essen, Feier, Konzert, Urlaub, Besuch (erweiterbar)
-
-Aufgabenboard mit Status, Fälligkeiten und Haushaltszuweisung
-
-
-Event-Rechte
-
-Alle Mitglieder können Termine für andere anlegen (z. B. Arzttermin für Kind → Push an Eltern).
-
-Alle Termine können von allen bearbeitet werden (keine Owner-Bindung).
-
-Neue Mitglieder nur durch Admin einladbar.
-
-
-Zusatzfeatures (v2+)
-
-Aufgabenlisten im Kalender
-
-Integration mit externen Kalenderdiensten
-
-Erweiterte Statistiken („meiste Termine“, „freie Slots“)
-
-
+| Bereich | Features (Auszug) |
+| --- | --- |
+| **Authentifizierung** | E-Mail & Google Sign-In (`lib/main.dart`, `features/auth/`), automatisches Nutzerprofil, Logout über AppBar |
+| **Haushalte** | Anlegen/Beitreten per Einladungscode, Rollenverwaltung, Adminrollen, Token-Handling (`household_repository.dart`, `features/household/presentation/`) |
+| **Kalender** | Monats-/Wochen-/Tages-/Agenda-Views, Event-Editor mit Kategorien, RRULE, Ausnahmen, Erinnerungen, Sichtbarkeiten (`features/calendar/presentation/`) |
+| **Verfügbarkeiten** | Editor & Auswertung, Firestore-Trigger aggregiert Tageszusammenfassung (`availability_editor_sheet.dart`, `firebase/functions/src/index.ts`) |
+| **Aufgaben** | Task-Board mit Drag/Drop? (List), Editor-Bottom-Sheet, Statuswechsel & Löschbestätigung (`features/tasks/presentation/`, `TaskRepository`) |
+| **Geburtstage** | Übersicht & Altersberechnung im UI (`birthday_tab.dart`) plus täglicher Worker `birthdayUpdater` |
+| **Benachrichtigungen** | Gerätespezifische Token-Speicherung, Event- und Task-Reminder (`notifications_service.dart`, Cloud Functions) |
+| **ICS & Integrationen** | `importIcs` & `exportIcs` Callables, ICS-Parsing & -Generierung (`firebase/functions/src/index.ts`) |
+| **Security** | Durchdachte Firestore-Regeln (`firebase/firestore.rules`) mit Mitgliedschafts- und Rollen-Checks |
 
 ---
 
-4. Datenmodell (Firestore)
+## 🧩 Architektur auf einen Blick
 
-users/{uid}: Stammdaten, Zeitzone, Haushaltszugehörigkeit
-
-households/{hid}: Metadaten zum Haushalt
-
-memberships/{hid}_{uid}:
-
-Rolle: frei benennbar, Farbe (HEX)
-
-isAdmin: bool (nur 1 Admin pro Haushalt)
-
-
-calendars/{cid}: Kalender pro Haushalt
-
-events/{eid}:
-
-Kategorie: enum (geschäftlich, privat, essen, …)
-
-Teilnehmer: beliebige Mitglieder
-
-Änderungsrechte: alle Household-Member
-
-
-birthdays/{uid}:
-
-Name, Geburtsdatum, wiederkehrender Event mit Altersberechnung
-
-
-availabilities/{uid}_{dateISO}: Tagesverfügbarkeiten
-
-availabilitySummaries/{hid}_{dateISO}: Aggregierte Slots je Haushalt & Tag
-
-tasks/{tid}: Aufgaben inkl. Status, Verantwortlichen und Due-Date
-
-invites/{token}: Einladungen für neue Mitglieder (nur Admin)
-
-deviceTokens/{uid}/{tokenId}: Push-Token
-
-
-
----
-
-5. Backend-Logik (Firebase Functions)
-
-scheduleEventReminders: Erstellt Reminder-Jobs pro Teilnehmer
-
-reminderWorker: Läuft jede Minute, versendet Push-Notifikationen
-
-importICS: ICS-Dateien parsen und in Events konvertieren
-
-birthdayUpdater: erstellt jährliche Geburtstags-Events, aktualisiert Alter
-
-cleanup: Alte/canceled Events bereinigen
-
-aggregateAvailabilities: wertet Tagesverfügbarkeiten aus und speichert Zusammenfassungen
-
-taskReminderWorker: tägliche Prüfung überfälliger Aufgaben und Push-Reminder
-
-
-Sicherheit
-
-Firestore Rules (Version 2):
-
-Nur Admin darf Mitglieder einladen/entfernen
-
-Rollen & Farben frei editierbar durch Admin
-
-Alle Mitglieder dürfen Events anlegen & bearbeiten
-
-Teilnehmer können Reminder/Status anpassen
-
-
-
-
----
-
-6. Frontend-Struktur (Flutter)
-
-lib/
+```
+frontend/lib/
   main.dart
   features/
     auth/
     household/
     calendar/
-      views/ (Month, Week, Day, Agenda, BirthdayTab, Availability)
-      controllers/ (Firestore Streams, RRULE Parser)
-      widgets/ (EventCard, EventEditor, CategoryChips, ColorPicker)
+      presentation/ agenda, month, week, day, availability, birthday
+      controllers/
+      widgets/
     tasks/
-      presentation/ (TaskBoard, TaskEditor)
+    settings/
+  models/
   services/
+    repositories/
+      household_repository.dart
+      calendar_repository.dart
+      task_repository.dart
     firestore_service.dart
     functions_service.dart
     notifications_service.dart
-    repositories/ (events, households, memberships, calendars, availabilities, tasks)
-  models/
-    user.dart
-    household.dart
-    calendar.dart
-    event.dart
-    role.dart
-    birthday.dart
-    recurrence.dart
-    availability.dart
-    task.dart
-  utils/
-    tz.dart
-    date_math.dart
 
-UI Guidelines
+firebase/
+  firestore.rules
+  functions/
+    src/index.ts
+    types/
+```
 
-ShadCN-inspiriert: klare Strukturen, Karten, Chips für Kategorien, Role-Badges in frei gewählten Farben
-
-Geburtstagstab: eigener Tab in der Bottom-Navigation
-
-Event-Editor: Kategorieauswahl via Chips, Teilnehmerauswahl mit Push-Benachrichtigungen
-
-Rollenverwaltung: Admin kann Namen und Farben definieren
-
-
-Screens
-
-1. Auth: Login/Registrierung via Firebase Auth
-
-
-2. Household Select: Haushalt erstellen/joinen (nur Admin fügt Mitglieder hinzu)
-
-
-3. Kalender-Übersicht: Monats-, Wochen-, Tagesansicht, Geburtstags-Tab
-
-
-4. Event-Editor: Titel, Ort, Zeit, Wiederholung, Teilnehmer, Kategorie
-
-
-5. Einstellungen: Rollen & Farben, Push, ICS-Import/Export
-
-
-
+- **State & Datenzugriff:** Repository-Layer kapselt Firestore/Functions-Aufrufe; UI erhält Streams für Echtzeitupdates.
+- **Widgets:** Material 3, responsive Layouts, modulare Komponenten (`features/calendar/widgets/`).
+- **Services:** Notifications-Handling, Functions-Clients, Utility-Layer (`frontend/lib/services/`).
 
 ---
 
-7. Design-Prinzipien
+## ☁️ Firebase Cloud Functions
 
-Mobile-first
+Alle Funktionen leben in `firebase/functions/src/index.ts` und laufen auf Node.js 20:
 
-Clean UI: Kategorien-Chips, Rollen-Badges
-
-Visuelles Feedback: Farben abhängig von Rollen/Kategorien
-
-Accessibility: große Touch-Zonen, Screenreader-Support
-
-
-
----
-
-8. CI/CD & Deployment
-
-Entwicklung: GitHub Repo
-
-CI: Lint + Tests + Build via GitHub Actions
-
-Deploy: Firebase Hosting (Web), Play Store, App Store
-
-Versionierung: Semantic Versioning (1.0.0 MVP)
-
-
+- `scheduleEventReminders` – legt Erinnerungen in `scheduledReminders` an (callable).
+- `reminderWorker` – verschickt minütlich Push-Nachrichten für fällige Termine (Pub/Sub cron).
+- `importIcs` / `exportIcs` – bidirektionaler ICS-Sync für Kalender.
+- `birthdayUpdater` – aktualisiert täglich kommende Geburtstage & Altersangaben.
+- `aggregateAvailabilities` – aggregiert Verfügbarkeiten je Tag/Haushalt (Firestore Trigger).
+- `taskReminderWorker` – erinnert Verantwortliche an überfällige Aufgaben.
+- `cleanup` – entfernt veraltete Einladungen und alte Reminder-Dokumente.
 
 ---
 
-9. Roadmap
+## 🛠️ Technologie-Stack
 
-MVP (1.0.0): Auth, Haushalt, Rollen mit Farben, Kalender, Events, Kategorien, Push
-
-1.1.0: ICS Import/Export, Geburtstags-Tab mit Altersberechnung
-
-1.2.0: Aufgabenlisten, Statistiken
-
-2.0.0: Externe Integrationen (Google, Outlook), Widget-Integration
-
-
+- Flutter 3 (Material 3, Custom Widgets, intl, cloud_firestore, firebase_auth, firebase_messaging)
+- Firebase Authentication, Cloud Firestore, Cloud Functions, Cloud Messaging, Firebase Hosting
+- GitHub Actions, Firebase CLI, Dart/Flutter Analyzer, Codacy Quality Checks
 
 ---
 
-10. Zielbild
+## 🧪 Qualität & Sicherheit
 
-Eine extrem gut aussehende, intuitive Kalender-App für Paare und Familien, die:
+- Firestore-Regeln decken Haushaltsrollen, Sichtbarkeiten und Mitgliedschaftsprüfung ab.
+- Repository-Tests (`frontend/test/`) prüfen Termin- und Wiederholungslogik.
+- Codacy & Analyzer Pipelines halten sich an Dart Style, Complexity und Security Checks.
 
-Rollen frei benennen und farblich darstellen kann
+---
 
-Kategorien für Events bietet
+## 📚 Weiterführende Dokumente
 
-Geburtstage automatisch verwaltet und Alter berechnet
+- Produktvision & Roadmap: `docs/phase0.md` bis `docs/phase6.md`
+- Firebase-Konfiguration & Deploy-Guides: `firebase/setup.md`, `docs/release_checklist.md`
+- Fehler- & Statusberichte: `docs/fault log`
 
-schneller und schlanker als Google Calendar wirkt
+---
 
-visuell modern (ShadCN/Tailwind inspiriert, Material 3 optimiert)
+FamilyCal entsteht als persönliches Herzensprojekt für stressfreien Familienalltag. Feedback, Issues oder Pull Requests sind willkommen!
 
-zuverlässig synchronisiert und offline nutzbar bleibt

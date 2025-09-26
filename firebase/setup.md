@@ -1,12 +1,45 @@
 # Firebase Schritt-für-Schritt-Anleitung
 
+## Schnellstart für familycal-prod
+
+1. **Voraussetzungen installieren**: Flutter ≥ 3.16, Node.js 20 LTS, Firebase CLI (`npm install -g firebase-tools`), FlutterFire CLI (`dart pub global activate flutterfire_cli`).
+2. **CLI verbinden**:
+	```powershell
+	firebase login
+	firebase use --add familycal-prod
+	```
+	Alias `prod` wählen. Optional einen zweiten Alias für ein Entwicklungsprojekt anlegen.
+3. **Apps registrieren**: In der Firebase-Konsole Android (`app.familycal`), iOS (`app.familycal`) und Web anlegen sowie `google-services.json`/`GoogleService-Info.plist` herunterladen.
+4. **Konfigurationsdateien platzieren**: `google-services.json` nach `frontend/android/app/`, `GoogleService-Info.plist` nach `frontend/ios/Runner/` kopieren.
+5. **Flutter mit Firebase verbinden**:
+	```powershell
+	cd frontend
+	flutterfire configure --project=familycal-prod --platforms=android,ios,macos,web --out=lib/services/firebase/firebase_options.dart
+	cd ..
+	```
+6. **Cloud Functions vorbereiten**:
+	```powershell
+	cd firebase/functions
+	npm install
+	npm run build
+	cd ..
+	```
+7. **Regeln & Funktionen deployen**:
+	```powershell
+	firebase deploy --only firestore:rules
+	firebase deploy --only functions
+	```
+8. **Optional**: Emulator Suite starten (`firebase emulators:start --only firestore,functions,auth`).
+
+Die folgenden Abschnitte enthalten weiterführende Details und optionale Schritte.
+
 Diese Anleitung richtet sich an Projektbeteiligte, die die Firebase-Infrastruktur für FamilyCal von Grund auf einrichten möchten. Alle Schritte werden in der Reihenfolge ausgeführt, in der sie benötigt werden. Optional markierte Schritte können nach dem MVP erfolgen.
 
 ## Voraussetzungen
 - Google Cloud/Firebase-Konto mit Berechtigung, Projekte anzulegen.
 - Firebase CLI (`npm install -g firebase-tools`).
 - Flutter SDK inkl. `dart`, `flutterfire_cli` (per `dart pub global activate flutterfire_cli`).
-- Node.js ≥ 18 für Cloud Functions.
+- Node.js ≥ 20 für Cloud Functions.
 
 ## 1. Firebase-Projekt anlegen
 1. Öffne [https://console.firebase.google.com](https://console.firebase.google.com) und klicke auf "Projekt hinzufügen".
@@ -59,18 +92,13 @@ Im Ordner `firebase/functions` liegt ein vorkonfiguriertes TypeScript-Projekt mi
 - `scheduleEventReminders` (Callable): legt Reminder-Dokumente in `scheduledReminders` an.
 - `reminderWorker` (Pub/Sub, minütlich): sendet FCM-Notifications an registrierte Tokens.
 - `importIcs` (Callable): importiert ICS-Feeds in einen Kalender.
-- `birthdayUpdater` (täglich 02:00 Uhr): aktualisiert die Alters-/Terminangaben in `birthdays`.
-codex/implement-features-from-familycal-readme-j006u0
+- `birthdayUpdater` (täglich 02:00 Uhr): aktualisiert die Alters-/Terminangaben in `birthdays`.
 - `aggregateAvailabilities` (Firestore Trigger): aggregiert Tagesverfügbarkeiten in `availabilitySummaries`.
-- `taskReminderWorker` (täglich 07:00 Uhr): erinnert zugewiesene Mitglieder an überfällige Aufgaben.
-- `cleanup` (täglich 03:30 Uhr): löscht abgelaufene Einladungen und erledigte Reminder.
+- `taskReminderWorker` (täglich 07:00 Uhr): erinnert zugewiesene Mitglieder an überfällige Aufgaben.
+- `cleanup` (täglich 03:30 Uhr): löscht abgelaufene Einladungen und erledigte Reminder.
 
 > Hinweis: Für `watchHouseholdTasks` (Sortierung nach `isCompleted` + `dueDate`) sowie `aggregateAvailabilities` werden Firestore-Indizes benötigt. Die CLI meldet fehlende Indizes mit Direktlinks.
 
-=======
-- `cleanup` (täglich 03:30 Uhr): löscht abgelaufene Einladungen und erledigte Reminder.
-
-main
 ### Installation & lokale Entwicklung
 ```bash
 cd firebase/functions
@@ -135,11 +163,8 @@ Stelle sicher, dass Firestore, Auth und Functions lokal laufen. Trage die Emulat
 - Speichere Firebase-CLI-Token als GitHub Action Secret `FIREBASE_TOKEN`.
 - Hinterlege Apple/Play-Store-Credentials für spätere Deployments.
 - Lege `.env`-Dateien für lokale Entwicklung an (`frontend/.env.example`).
-codex/implement-features-from-familycal-readme-j006u0
 - Aktiviere das Workflow-Deployment (`.github/workflows/flutter_ci.yml`) und verknüpfe es mit Firebase Hosting (Preview & Live).
 - Befolge vor jedem Release die Schritte in [`docs/release_checklist.md`](../docs/release_checklist.md).
-=======
-main
 - Ergänze optionale Secrets für Functions (`ICS_IMPORT_URLS`, SMTP etc.), falls Reminder/Import automatisiert laufen sollen.
 
 Nach Durchführung dieser Schritte ist Firebase vollständig vorbereitet, damit die Flutter-App mit Authentifizierung, Firestore, Functions, Messaging und den neuen Reminder-/ICS-Workflows interagieren kann.

@@ -76,16 +76,12 @@ function formatIcsDate(date: Date): string {
   return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 }
 
-codex/implement-features-from-familycal-readme-j006u0
 function formatDateKey(date: Date): string {
   const year = date.getFullYear().toString().padStart(4, '0');
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
   return `${year}${month}${day}`;
 }
-
-=======
-main
 export const scheduleEventReminders = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Login erforderlich');
@@ -282,7 +278,6 @@ export const birthdayUpdater = functions.pubsub.schedule('0 2 * * *').onRun(asyn
   return null;
 });
 
-codex/implement-features-from-familycal-readme-j006u0
 export const aggregateAvailabilities = functions.firestore
   .document('availabilities/{docId}')
   .onWrite(async (change, context) => {
@@ -404,8 +399,6 @@ export const taskReminderWorker = functions.pubsub.schedule('0 7 * * *').onRun(a
   return null;
 });
 
-=======
-main
 export const cleanup = functions.pubsub.schedule('30 3 * * *').onRun(async () => {
   const now = admin.firestore.Timestamp.now();
   const inviteSnapshot = await db
