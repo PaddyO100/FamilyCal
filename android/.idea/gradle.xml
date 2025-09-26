@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT">
+            <builds>
+              <build path="$PROJECT_DIR$/../../../../../Program Files/flutter/packages/flutter_tools/gradle" name="gradle">
+                <projects>
+                  <project path="$PROJECT_DIR$/../../../../../Program Files/flutter/packages/flutter_tools/gradle" />
+                </projects>
+              </build>
+            </builds>
+          </compositeBuild>
+        </compositeConfiguration>
+        <option name="testRunner" value="CHOOSE_PER_TEST" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleJvm" value="#JAVA_HOME" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/../../../../../Program Files/flutter/packages/flutter_tools/gradle" />
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/app" />
+            <option value="$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/cloud_firestore-4.17.5/android" />
+            <option value="$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/cloud_functions-4.7.6/android" />
+            <option value="$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_auth-4.20.0/android" />
+            <option value="$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_core-2.32.0/android" />
+            <option value="$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_messaging-14.9.4/android" />
+          </set>
+        </option>
+        <option name="resolveExternalAnnotations" value="true" />
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

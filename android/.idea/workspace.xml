@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="4ba16cd9-1a0a-4232-b63c-6aebda4c8ba9" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../lib/features/auth/presentation/auth_page.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/calendar/controllers/event_controller.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/calendar/presentation/agenda_view.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/calendar/presentation/availability_editor_sheet.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/calendar/presentation/availability_view.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/calendar/presentation/birthday_tab.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/calendar/presentation/calendar_shell_page.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/calendar/presentation/day_view.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/calendar/presentation/event_editor_sheet.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/calendar/presentation/month_view.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/calendar/presentation/week_view.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/calendar/widgets/category_chips.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/calendar/widgets/color_picker.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/calendar/widgets/event_card.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/household/presentation/household_gate.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/household/presentation/household_select_page.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/settings/presentation/settings_page.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/tasks/presentation/task_board_page.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/features/tasks/presentation/task_editor_sheet.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/models/app_user.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/models/availability.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/models/birthday.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/models/calendar.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/models/event.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/models/household.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/models/membership.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/models/role.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/models/task.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/services/firebase/firebase_options.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/services/firestore_service.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/services/functions_service.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/services/notifications_service.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/services/repositories/availability_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/services/repositories/calendar_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/services/repositories/event_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/services/repositories/household_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/services/repositories/membership_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/services/repositories/task_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/services/repositories/user_repository.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/utils/app_theme.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/utils/date_math.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/utils/recurrence_utils.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../lib/utils/tz.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firebase/firestore.rules" beforeDir="false" afterPath="$PROJECT_DIR$/../firebase/firestore.rules" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firebase/functions/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../firebase/functions/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firebase/functions/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../firebase/functions/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firebase/setup.md" beforeDir="false" afterPath="$PROJECT_DIR$/../firebase/setup.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/lib/features/calendar/presentation/calendar_shell_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/lib/features/calendar/presentation/calendar_shell_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/lib/features/settings/presentation/settings_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/lib/features/settings/presentation/settings_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/lib/services/functions_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/lib/services/functions_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/pubspec.yaml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=PhysicalDevice, isTemplate=false, identifier=serial=41250DLJG000M7)]" />
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "PaddyO100"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/PaddyO100/FamilyCal.git",
+    "accountId": "4b02722f-db0b-479a-a69b-58902961c24d"
+  }
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="33CZMdY5eMVEdD1xyZjzQV5yUq5" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+    <option name="showMembers" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Android App.app.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Users/pitri/AndroidStudioProjects/FamilyCal/android",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
+    "show.migrate.to.gradle.popup": "false"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
+      <module name="android.app" />
+      <option name="ANDROID_RUN_CONFIGURATION_SCHEMA_VERSION" value="1" />
+      <option name="DEPLOY" value="true" />
+      <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
+      <option name="DEPLOY_AS_INSTANT" value="false" />
+      <option name="ARTIFACT_NAME" value="" />
+      <option name="PM_INSTALL_OPTIONS" value="" />
+      <option name="ALL_USERS" value="false" />
+      <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="ALLOW_ASSUME_VERIFIED" value="false" />
+      <option name="CLEAR_APP_STORAGE" value="false" />
+      <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
+      <option name="ACTIVITY_EXTRA_FLAGS" value="" />
+      <option name="MODE" value="default_activity" />
+      <option name="RESTORE_ENABLED" value="false" />
+      <option name="RESTORE_FILE" value="" />
+      <option name="RESTORE_FRESH_INSTALL_ONLY" value="false" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
+      <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
+      <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
+      <option name="DEBUGGER_TYPE" value="Auto" />
+      <Auto>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Auto>
+      <Hybrid>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Hybrid>
+      <Java>
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Java>
+      <Native>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Native>
+      <Profilers>
+        <option name="ADVANCED_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Java/Kotlin Method Sample (legacy)" />
+        <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
+        <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
+      </Profilers>
+      <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY" value="" />
+      <option name="ACTIVITY_CLASS" value="" />
+      <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="false" />
+      <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="4ba16cd9-1a0a-4232-b63c-6aebda4c8ba9" name="Changes" comment="" />
+      <created>1758822968119</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1758822968119</updated>
+    </task>
+    <servers />
+  </component>
+</project>
