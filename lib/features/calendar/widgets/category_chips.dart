@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 const defaultCategories = <String>[
-  'geschäftlich',
-  'privat',
-  'essen',
-  'feier',
-  'konzert',
-  'urlaub',
-  'besuch',
+  'Geschäftlich',
+  'Privat',
+  'Essen',
+  'Feier',
+  'Konzert',
+  'Urlaub',
+  'Besuch',
 ];
 
 class CategoryChips extends StatelessWidget {
@@ -16,6 +16,7 @@ class CategoryChips extends StatelessWidget {
   final ValueChanged<String> onCategorySelected;
   @override
   Widget build(BuildContext context) {
+    final normalizedSelected = selectedCategory.toLowerCase();
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -23,7 +24,7 @@ class CategoryChips extends StatelessWidget {
         for (final category in defaultCategories)
           ChoiceChip(
             label: Text(category),
-            selected: selectedCategory == category,
+            selected: category.toLowerCase() == normalizedSelected,
             onSelected: (value) {
               if (value) onCategorySelected(category);
             },
@@ -32,4 +33,3 @@ class CategoryChips extends StatelessWidget {
     );
   }
 }
-

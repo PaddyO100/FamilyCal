@@ -25,7 +25,9 @@ class HouseholdRepository {
         final householdDoc = await _households.doc(membership.householdId).get();
         return Household.fromFirestore(householdDoc);
       });
-      return Future.wait(futures);
+      final list = await Future.wait(futures);
+      final seen = <String>{};
+      return list.where((h) => seen.add(h.id)).toList();
     });
   }
 
@@ -49,6 +51,7 @@ class HouseholdRepository {
       'userId': adminUid,
       'roleId': adminRole.id,
       'roleName': adminRole.name,
+      'displayName': adminRole.name,
       'roleColor': adminRole.color,
       'isAdmin': true,
     });
@@ -76,6 +79,7 @@ class HouseholdRepository {
       'userId': userId,
       'roleId': role.id,
       'roleName': role.name,
+      'displayName': role.name,
       'roleColor': role.color,
       'isAdmin': isAdmin,
     });
@@ -122,6 +126,7 @@ class HouseholdRepository {
       'userId': userId,
       'roleId': data['roleId'],
       'roleName': data['roleName'],
+      'displayName': data['roleName'],
       'roleColor': data['roleColor'],
       'isAdmin': data['isAdmin'] as bool? ?? false,
     });
@@ -129,4 +134,3 @@ class HouseholdRepository {
     return Household.fromFirestore(householdDoc);
   }
 }
-

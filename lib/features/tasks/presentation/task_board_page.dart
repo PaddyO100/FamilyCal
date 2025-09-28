@@ -21,6 +21,13 @@ class _TaskBoardPageState extends State<TaskBoardPage>{
 }
 class _TaskSection extends StatelessWidget { const _TaskSection({required this.title, required this.tasks, required this.members, required this.onToggle, required this.onEdit, required this.onDelete}); final String title; final List<HouseholdTask> tasks; final List<Membership> members; final Future<void> Function(HouseholdTask,bool) onToggle; final void Function(HouseholdTask) onEdit; final Future<void> Function(HouseholdTask) onDelete; @override Widget build(BuildContext context){ return Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[ Row(children:[ Text(title, style: Theme.of(context).textTheme.titleMedium), const SizedBox(width:8), Chip(label: Text('${tasks.length}')) ]), const SizedBox(height:8), if (tasks.isEmpty) const Padding(padding: EdgeInsets.symmetric(vertical:16), child: Text('Nichts zu tun – gut gemacht!')) else ...tasks.map((task)=> Column(children:[ CheckboxListTile(value: task.isCompleted, onChanged: (v)=> onToggle(task, v?? false), title: Text(task.title), subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[ if (task.description!=null && task.description!.isNotEmpty) Padding(padding: const EdgeInsets.only(top:4), child: Text(task.description!)), if (task.dueDate!=null) Padding(padding: const EdgeInsets.only(top:4), child: Text('Fällig bis ${MaterialLocalizations.of(context).formatMediumDate(task.dueDate!)}', style: TextStyle(color: task.isCompleted? Theme.of(context).colorScheme.outline: Theme.of(context).colorScheme.primary))), if (task.assigneeIds.isNotEmpty) Padding(padding: const EdgeInsets.only(top:4), child: Wrap(spacing:6, children: task.assigneeIds.map((id){ final member = members.firstWhere((m)=> m.userId==id, orElse: ()=> Membership(id: id, householdId: '', userId: id, roleId: 'unknown', roleName: 'Mitglied', roleColor: '#E0E0E0', isAdmin: false)); return _AssigneeChip(member: member); }).toList())) ]), secondary: Row(mainAxisSize: MainAxisSize.min, children:[ IconButton(icon: const Icon(Icons.edit_outlined), onPressed: ()=> onEdit(task)), IconButton(icon: const Icon(Icons.delete_outline), onPressed: ()=> onDelete(task)) ])), if (task != tasks.last) const Divider(height:1, indent:16, endIndent:16) ])) ]))); }
 }
-class _AssigneeChip extends StatelessWidget { const _AssigneeChip({required this.member}); final Membership member; @override Widget build(BuildContext context){ return Chip(avatar: CircleAvatar(backgroundColor: Color(int.parse(member.roleColor.replaceFirst('#','0xff'))), child: Text(member.roleName.isEmpty? '?': member.roleName.substring(0,1).toUpperCase(), style: const TextStyle(color: Colors.white))), label: Text(member.roleName)); }
-}
-
+class _AssigneeChip extends StatelessWidget { const _AssigneeChip({required this.member}); final Membership member; @override Widget build(BuildContext context){
+  final bg = Color(int.parse(member.roleColor.replaceFirst('#','0xff')));
+  return Chip(
+    avatar: CircleAvatar(
+      backgroundColor: bg,
+      child: Text(member.initial, style: const TextStyle(color: Colors.white)),
+    ),
+    label: Text(member.shortLabel.isEmpty ? 'Mitglied' : member.shortLabel),
+  );
+}}

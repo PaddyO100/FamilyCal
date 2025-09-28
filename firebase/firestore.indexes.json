@@ -1,0 +1,46 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {"fieldPath": "householdId", "order": "ASCENDING"},
+        {"fieldPath": "start", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "availabilitySummaries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "householdId", "order": "ASCENDING"},
+        {"fieldPath": "dateKey", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "availabilities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "userId", "order": "ASCENDING"},
+        {"fieldPath": "dateKey", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "householdId", "order": "ASCENDING"},
+        {"fieldPath": "isCompleted", "order": "ASCENDING"},
+        {"fieldPath": "dueDate", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "birthdays",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "householdId", "order": "ASCENDING"},
+        {"fieldPath": "birthDate", "order": "ASCENDING"}
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

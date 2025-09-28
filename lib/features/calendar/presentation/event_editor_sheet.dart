@@ -25,10 +25,16 @@ class EventEditorSheet extends StatefulWidget {
     super.key,
     required this.household,
     this.initialEvent,
+    this.suggestedStart,
+    this.suggestedEnd,
+    this.initialParticipantIds,
   });
 
   final Household household;
   final CalendarEvent? initialEvent;
+  final DateTime? suggestedStart;
+  final DateTime? suggestedEnd;
+  final List<String>? initialParticipantIds;
 
   static Future<void> show(
     BuildContext context, {
@@ -48,6 +54,17 @@ class EventEditorSheet extends StatefulWidget {
     );
   }
 
+  static Future<void> showNewSuggestion(BuildContext context, {required Household household, required DateTime start, required DateTime end, required List<String> participantIds}){
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (c)=> Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(c).viewInsets.bottom),
+        child: EventEditorSheet(household: household, suggestedStart: start, suggestedEnd: end, initialParticipantIds: participantIds),
+      ),
+    );
+  }
+
   @override
   State<EventEditorSheet> createState() => _EventEditorSheetState();
 }
@@ -62,8 +79,8 @@ class _EventEditorSheetState extends State<EventEditorSheet> {
   late DateTime _start;
   late DateTime _end;
   String? _selectedCalendarId;
-  String _category = defaultCategories.first;
-  String _visibility = 'household';
+  String _category = 'Allgemein';
+  String _visibility = 'Haushalt';
   List<String> _selectedParticipants = <String>[];
   RecurrenceType _recurrenceType = RecurrenceType.none;
   List<int> _weeklyWeekdays = <int>[];
@@ -90,12 +107,20 @@ class _EventEditorSheetState extends State<EventEditorSheet> {
     _notificationsService = NotificationsService(FirebaseMessaging.instance);
 
     final now = DateTime.now();
-    _start = widget.initialEvent?.start ?? now;
-    _end = widget.initialEvent?.end ?? now.add(const Duration(hours: 1));
+    _start = widget.initialEvent?.start ?? widget.suggestedStart ?? now;
+    _end = widget.initialEvent?.end ?? widget.suggestedEnd ?? (_start.add(const Duration(hours: 1)));
     _category = widget.initialEvent?.category ?? _category;
     _visibility = widget.initialEvent?.visibility ?? _visibility;
-    _selectedParticipants =
-        List<String>.from(widget.initialEvent?.participantIds ?? <String>[]);
+    _selectedParticipants = List<String>.from(
+      widget.initialEvent?.participantIds ??
+      widget.initialParticipantIds ??
+      <String>[]
+    );
+    // Falls leer und kein Vorschlag: Standard (Aktueller User)
+    if (_selectedParticipants.isEmpty){
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) _selectedParticipants = [uid];
+    }
     _reminders =
         List<int>.from(widget.initialEvent?.reminderMinutes ?? <int>[30]);
     _selectedCalendarId = widget.initialEvent?.calendarId;
@@ -221,6 +246,9 @@ class _EventEditorSheetState extends State<EventEditorSheet> {
     if (pickedDate == null) {
       return;
     }
+    if (!mounted) {
+      return;
+    }
 
     final pickedTime = await showTimePicker(
       context: context,
@@ -228,6 +256,9 @@ class _EventEditorSheetState extends State<EventEditorSheet> {
     );
 
     if (pickedTime == null) {
+      return;
+    }
+    if (!mounted) {
       return;
     }
 
@@ -257,19 +288,25 @@ class _EventEditorSheetState extends State<EventEditorSheet> {
     });
   }
 
-  Future<void> _saveEvent(
+  Future<String?> _saveEvent(
     HouseholdCalendar calendar,
     List<Membership> members,
   ) async {
     if (!_formKey.currentState!.validate()) {
-      return;
+  return '';
     }
 
     setState(() => _isSaving = true);
 
     try {
       await _notificationsService.requestPermissions();
+      if (!mounted) {
+        return null;
+      }
       final reminderToken = await _notificationsService.getDeviceToken();
+      if (!mounted) {
+        return null;
+      }
 
       if (reminderToken != null) {
         final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -282,6 +319,9 @@ class _EventEditorSheetState extends State<EventEditorSheet> {
           'token': reminderToken,
           'updatedAt': Timestamp.now(),
         });
+        if (!mounted) {
+          return null;
+        }
       }
 
       final participants = _selectedParticipants.isEmpty
@@ -292,6 +332,7 @@ class _EventEditorSheetState extends State<EventEditorSheet> {
         id: widget.initialEvent?.id ?? const Uuid().v4(),
         calendarId: calendar.id,
         householdId: widget.household.id,
+        authorId: widget.initialEvent?.authorId ?? FirebaseAuth.instance.currentUser!.uid,
         title: _titleController.text.trim(),
         start: _start,
         end: _end,
@@ -309,40 +350,39 @@ class _EventEditorSheetState extends State<EventEditorSheet> {
 
       if (widget.initialEvent == null) {
         final id = await _eventRepository.createEvent(event);
+        if (!mounted) {
+          return null;
+        }
         if (functionsEnabled) {
           await _functionsService!.scheduleReminders(
             calendarId: calendar.id,
             eventId: id,
             reminderMinutes: reminderValues,
           );
+          if (!mounted) {
+            return null;
+          }
         }
       } else {
         await _eventRepository.updateEvent(event);
+        if (!mounted) {
+          return null;
+        }
         if (functionsEnabled) {
           await _functionsService!.scheduleReminders(
             calendarId: calendar.id,
             eventId: event.id,
             reminderMinutes: reminderValues,
           );
+          if (!mounted) {
+            return null;
+          }
         }
       }
 
-      if (!mounted) {
-        return;
-      }
-
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Termin gespeichert.')),
-      );
+      return null;
     } catch (e) {
-      if (!mounted) {
-        return;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Fehler: $e')),
-      );
+      return 'Fehler: $e';
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -613,16 +653,12 @@ class _EventEditorSheetState extends State<EventEditorSheet> {
                         decoration: const InputDecoration(labelText: 'Sichtbarkeit'),
                         items: const [
                           DropdownMenuItem(
-                            value: 'private',
-                            child: Text('Privat'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'household',
+                            value: 'Haushalt',
                             child: Text('Haushalt'),
                           ),
                           DropdownMenuItem(
-                            value: 'public',
-                            child: Text('Öffentlich'),
+                            value: 'Privat',
+                            child: Text('Privat'),
                           ),
                         ],
                         onChanged: (value) {
@@ -642,18 +678,14 @@ class _EventEditorSheetState extends State<EventEditorSheet> {
                         children: [
                           for (final member in members)
                             FilterChip(
-                              label: Text(member.roleName),
+                              label: Text(member.label),
                               avatar: CircleAvatar(
                                 backgroundColor: Color(
                                   int.parse(
                                     member.roleColor.replaceFirst('#', '0xff'),
                                   ),
                                 ),
-                                child: Text(
-                                  member.roleName.isNotEmpty
-                                      ? member.roleName.substring(0, 1).toUpperCase()
-                                      : '?',
-                                ),
+                                child: Text(member.initial),
                               ),
                               selected: _selectedParticipants.contains(member.userId),
                               onSelected: (selected) {
@@ -695,7 +727,26 @@ class _EventEditorSheetState extends State<EventEditorSheet> {
                       FilledButton.icon(
                         onPressed: _isSaving
                             ? null
-                            : () => _saveEvent(selectedCalendar, members),
+                            : () async {
+                                final result =
+                                    await _saveEvent(selectedCalendar, members);
+                                if (!context.mounted) {
+                                  return;
+                                }
+
+                                if (result == null) {
+                                  Navigator.of(context).pop();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Termin gespeichert.'),
+                                    ),
+                                  );
+                                } else if (result.isNotEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(result)),
+                                  );
+                                }
+                              },
                         icon: _isSaving
                             ? const SizedBox(
                                 width: 18,

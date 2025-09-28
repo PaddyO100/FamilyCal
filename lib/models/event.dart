@@ -5,6 +5,7 @@ class CalendarEvent {
     required this.id,
     required this.calendarId,
     required this.householdId,
+    required this.authorId,
     required this.title,
     required this.start,
     required this.end,
@@ -24,6 +25,7 @@ class CalendarEvent {
       id: doc.id,
       calendarId: data['calendarId'] as String? ?? '',
       householdId: data['householdId'] as String? ?? '',
+      authorId: data['authorId'] as String? ?? '',
       title: data['title'] as String? ?? '',
       start: (data['start'] as Timestamp?)?.toDate() ?? DateTime.now(),
       end: (data['end'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -41,6 +43,7 @@ class CalendarEvent {
   final String id;
   final String calendarId;
   final String householdId;
+  final String authorId;
   final String title;
   final DateTime start;
   final DateTime end;
@@ -57,6 +60,7 @@ class CalendarEvent {
     return {
       'calendarId': calendarId,
       'householdId': householdId,
+      'authorId': authorId,
       'title': title,
       'start': Timestamp.fromDate(start),
       'end': Timestamp.fromDate(end),
@@ -75,6 +79,7 @@ class CalendarEvent {
     String? id,
     String? calendarId,
     String? householdId,
+    String? authorId,
     String? title,
     DateTime? start,
     DateTime? end,
@@ -91,6 +96,7 @@ class CalendarEvent {
       id: id ?? this.id,
       calendarId: calendarId ?? this.calendarId,
       householdId: householdId ?? this.householdId,
+      authorId: authorId ?? this.authorId,
       title: title ?? this.title,
       start: start ?? this.start,
       end: end ?? this.end,
@@ -105,4 +111,3 @@ class CalendarEvent {
     );
   }
 }
-

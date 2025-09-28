@@ -221,7 +221,11 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
                 children: widget.members.map((member) {
                   final selected = _assigneeIds.contains(member.userId);
                   return FilterChip(
-                    label: Text(member.roleName),
+                    label: Text(member.shortLabel.isEmpty ? 'Mitglied' : member.shortLabel),
+                    avatar: CircleAvatar(
+                      backgroundColor: Color(int.parse(member.roleColor.replaceFirst('#','0xff'))),
+                      child: Text(member.initial, style: const TextStyle(color: Colors.white)),
+                    ),
                     selected: selected,
                     onSelected: _saving
                         ? null
@@ -264,4 +268,3 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
     );
   }
 }
-

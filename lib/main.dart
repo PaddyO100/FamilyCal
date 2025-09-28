@@ -1,11 +1,12 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'package:familycal/services/firebase/firebase_options.dart';
+import 'package:familycal/firebase_options.dart';
 import 'package:familycal/utils/app_theme.dart';
 import 'package:familycal/features/auth/presentation/auth_page.dart';
 import 'package:familycal/features/household/presentation/household_gate.dart';
@@ -13,7 +14,6 @@ import 'package:familycal/features/household/presentation/household_gate.dart';
 Future<void> main() async {
   await runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
-
     try {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
@@ -25,11 +25,30 @@ Future<void> main() async {
         rethrow;
       }
     }
-
+    logFirebaseContext();
     runApp(const FamilyCalApp());
   }, (error, stackTrace) {
-    debugPrint('Uncaught error: $error\n$stackTrace');
+    debugPrint('Uncaught zone error: $error');
+    debugPrint('Stack trace: $stackTrace');
+    logFirebaseContext();
   });
+}
+
+void logFirebaseContext() {
+  if (Firebase.apps.isEmpty) {
+    debugPrint('Firebase not initialised; context unavailable.');
+    return;
+  }
+
+  final user = FirebaseAuth.instance.currentUser;
+  debugPrint('UID: ${user?.uid ?? 'no user'}');
+
+  try {
+    final projectId = FirebaseFirestore.instance.app.options.projectId;
+    debugPrint('Firestore project: $projectId');
+  } catch (error) {
+    debugPrint('Unable to resolve Firestore project: $error');
+  }
 }
 
 class FamilyCalApp extends StatelessWidget {

@@ -4,8 +4,11 @@ import 'package:familycal/features/calendar/presentation/event_editor_sheet.dart
 import 'package:familycal/features/calendar/widgets/event_card.dart';
 import 'package:familycal/models/event.dart';
 import 'package:familycal/models/household.dart';
+import 'package:familycal/models/membership.dart';
 import 'package:familycal/services/repositories/event_repository.dart';
+import 'package:familycal/services/repositories/membership_repository.dart';
 import 'package:familycal/utils/date_math.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class WeekView extends StatefulWidget {
   const WeekView({super.key, required this.household});
@@ -16,11 +19,13 @@ class WeekView extends StatefulWidget {
 
 class _WeekViewState extends State<WeekView> {
   late final EventRepository _repository;
+  late final MembershipRepository _membershipRepository;
   late DateTime _weekStart;
   @override
   void initState() {
     super.initState();
     _repository = EventRepository(FirebaseFirestore.instance);
+    _membershipRepository = MembershipRepository(FirebaseFirestore.instance);
     _weekStart = DateMath.startOfWeek(DateTime.now());
   }
   void _changeWeek(int delta) {
@@ -49,23 +54,60 @@ class _WeekViewState extends State<WeekView> {
         ])),
         IconButton(icon: const Icon(Icons.chevron_right), onPressed: () => _changeWeek(1)),
       ])),
-      Expanded(child: StreamBuilder<List<CalendarEvent>>(
-        stream: _repository.watchEvents(householdId: widget.household.id, from: _weekStart, to: weekEnd),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Padding(padding: const EdgeInsets.all(24), child: Text('Wochentermine konnten nicht geladen werden.\n${snapshot.error}', textAlign: TextAlign.center)));
-          }
-          if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) { return const Center(child: CircularProgressIndicator()); }
-          final events = List<CalendarEvent>.from(snapshot.data ?? const <CalendarEvent>[]);
-            final days = List.generate(7, (index) { final day = _weekStart.add(Duration(days:index)); final dayEvents = events.where((e)=> DateMath.isSameDay(e.start, day)).toList()..sort((a,b)=>a.start.compareTo(b.start)); return MapEntry(day, dayEvents); });
-            return ListView.builder(padding: const EdgeInsets.symmetric(horizontal:16, vertical:8), itemCount: days.length, itemBuilder: (context, index) { final entry = days[index]; final day = entry.key; final dayEvents = entry.value; return Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
-              Padding(padding: const EdgeInsets.symmetric(vertical:8), child: Text('${MaterialLocalizations.of(context).formatMediumDate(day)} (${_weekdayLabel(day.weekday)})', style: Theme.of(context).textTheme.titleSmall)),
-              if (dayEvents.isEmpty) Container(width: double.infinity, padding: const EdgeInsets.all(16), decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: Theme.of(context).colorScheme.surfaceContainerHighest), child: const Text('Keine Termine')) else ...dayEvents.map((event)=>Padding(padding: const EdgeInsets.only(bottom:12), child: EventCard(event: event, onTap: ()=> EventEditorSheet.show(context, household: widget.household, initialEvent: event))))
-            ]); });
+      Expanded(child: StreamBuilder<List<Membership>>(
+        stream: _membershipRepository.watchHouseholdMembers(widget.household.id),
+        builder: (context, memberSnap){
+          if (!memberSnap.hasData){ return const Center(child: CircularProgressIndicator()); }
+          final members = memberSnap.data!;
+          final currentUser = FirebaseAuth.instance.currentUser;
+          return StreamBuilder<List<CalendarEvent>>(
+            stream: _repository.watchEvents(householdId: widget.household.id, from: _weekStart, to: weekEnd),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(child: Padding(padding: const EdgeInsets.all(24), child: Text('Wochentermine konnten nicht geladen werden.\n${snapshot.error}', textAlign: TextAlign.center)));
+              }
+              if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) { return const Center(child: CircularProgressIndicator()); }
+              final events = List<CalendarEvent>.from(snapshot.data ?? const <CalendarEvent>[]);
+              final days = List.generate(7, (index) {
+                final day = _weekStart.add(Duration(days:index));
+                final dayEvents = events.where((e)=> DateMath.isSameDay(e.start, day)).toList()..sort((a,b)=>a.start.compareTo(b.start));
+                return MapEntry(day, dayEvents);
+              });
+              return ListView.builder(padding: const EdgeInsets.symmetric(horizontal:16, vertical:8), itemCount: days.length, itemBuilder: (context, index) {
+                final entry = days[index]; final day = entry.key; final dayEvents = entry.value;
+                return Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
+                  Padding(padding: const EdgeInsets.symmetric(vertical:8), child: Text('${MaterialLocalizations.of(context).formatMediumDate(day)} (${_weekdayLabel(day.weekday)})', style: Theme.of(context).textTheme.titleSmall)),
+                  if (dayEvents.isEmpty) Container(width: double.infinity, padding: const EdgeInsets.all(16), decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: Theme.of(context).colorScheme.surfaceContainerHighest), child: const Text('Keine Termine'))
+                  else ...dayEvents.map((event){
+                    if (event.visibility == 'Privat' && event.authorId != (currentUser?.uid ?? '')) {
+                      final author = members.firstWhere((m)=> m.userId == event.authorId, orElse: ()=> Membership(id:'', householdId:'', userId:'', roleId:'', roleName:'Mitglied', roleColor:'#808080', isAdmin:false));
+                      return Container(
+                        margin: const EdgeInsets.only(bottom:12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        ),
+                        child: Row(children:[
+                          CircleAvatar(backgroundColor: Colors.grey, child: Text(event.start.hour.toString().padLeft(2,'0'), style: const TextStyle(color: Colors.white))),
+                          const SizedBox(width:12),
+                          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
+                            Text('Privater Termin von ${author.label}', style: Theme.of(context).textTheme.bodyMedium),
+                            const SizedBox(height:4),
+                            Text(DateMath.formatTimeRange(event.start, event.end), style: Theme.of(context).textTheme.bodySmall),
+                          ]))
+                        ]),
+                      );
+                    }
+                    return Padding(padding: const EdgeInsets.only(bottom:12), child: EventCard(event: event, onTap: ()=> EventEditorSheet.show(context, household: widget.household, initialEvent: event)));
+                  })
+                ]);
+              });
+            },
+          );
         },
       ),)
     ]);
   }
   String _weekdayLabel(int weekday) { switch(weekday){case DateTime.monday: return 'Mo';case DateTime.tuesday: return 'Di';case DateTime.wednesday: return 'Mi';case DateTime.thursday: return 'Do';case DateTime.friday: return 'Fr';case DateTime.saturday: return 'Sa';case DateTime.sunday: default: return 'So';} }
 }
-

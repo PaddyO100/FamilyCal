@@ -16,6 +16,7 @@ void main() {
       id: 'e1',
       calendarId: 'c1',
       householdId: 'h1',
+      authorId: 'u1',
       title: 'Termin',
       start: DateTime(2025, 1, 1, 10),
       end: DateTime(2025, 1, 1, 11),

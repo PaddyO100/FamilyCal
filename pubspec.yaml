@@ -44,6 +44,7 @@ dependencies:
   # (freezed/json not zwingend genutzt, aber belassen falls später Codegen nötig)
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
+  shared_preferences: ^2.3.0
 
 dev_dependencies:
   flutter_test:

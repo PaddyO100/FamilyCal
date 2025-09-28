@@ -70,6 +70,7 @@ class _AvailabilityEditorSheetState extends State<AvailabilityEditorSheet> {
   }
 
   Future<void> _addSlot() async {
+    final messenger = ScaffoldMessenger.of(context);
     final now = TimeOfDay.fromDateTime(DateTime.now());
     final start = await showTimePicker(
       context: context,
@@ -81,24 +82,26 @@ class _AvailabilityEditorSheetState extends State<AvailabilityEditorSheet> {
             ),
     );
     if (start == null) return;
+    if (!mounted) return;
     final end = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(hour: (start.hour + 1).clamp(0, 23), minute: start.minute),
     );
     if (end == null) return;
+    if (!mounted) return;
     final startMinutes = start.hour * 60 + start.minute;
     final endMinutes = end.hour * 60 + end.minute;
     if (endMinutes <= startMinutes) {
-      if (!mounted) {
+      if (!context.mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(content: Text('Endzeit muss nach der Startzeit liegen.')),
       );
       return;
     }
-    if (!mounted) {
+    if (!context.mounted) {
       return;
     }
 
@@ -110,6 +113,8 @@ class _AvailabilityEditorSheetState extends State<AvailabilityEditorSheet> {
   }
 
   Future<void> _save() async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _saving = true);
     try {
       final base = widget.initialAvailability ??
@@ -130,17 +135,17 @@ class _AvailabilityEditorSheetState extends State<AvailabilityEditorSheet> {
       } else {
         await widget.repository.upsertAvailability(updated);
       }
-      if (!mounted) {
+      if (!context.mounted) {
         return;
       }
 
-      Navigator.of(context).pop();
+      navigator.pop();
     } on FirebaseException catch (error) {
-      if (!mounted) {
+      if (!context.mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text('Speichern fehlgeschlagen: ${error.message ?? error.code}')),
       );
     } finally {
@@ -149,6 +154,8 @@ class _AvailabilityEditorSheetState extends State<AvailabilityEditorSheet> {
   }
 
   Future<void> _deleteAvailability() async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _saving = true);
     try {
       await widget.repository.deleteAvailability(
@@ -156,17 +163,17 @@ class _AvailabilityEditorSheetState extends State<AvailabilityEditorSheet> {
         date: widget.date,
       );
 
-      if (!mounted) {
+      if (!context.mounted) {
         return;
       }
 
-      Navigator.of(context).pop();
+      navigator.pop();
     } on FirebaseException catch (error) {
-      if (!mounted) {
+      if (!context.mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text('Löschen fehlgeschlagen: ${error.message ?? error.code}')),
       );
     } finally {

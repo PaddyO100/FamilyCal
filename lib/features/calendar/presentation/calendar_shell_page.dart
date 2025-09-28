@@ -57,6 +57,7 @@ class _CalendarShellPageState extends State<CalendarShellPage>{
           'userId': widget.user.uid,
           'roleId': isAdmin ? 'admin' : 'member',
           'roleName': isAdmin ? 'Administrator' : 'Mitglied',
+          'displayName': isAdmin ? 'Administrator' : 'Mitglied',
           'roleColor': fallbackColor,
           'isAdmin': isAdmin,
         });
@@ -119,7 +120,6 @@ class _CalendarShellPageState extends State<CalendarShellPage>{
     body: IndexedStack(index: _currentIndex, children: pages),
     bottomNavigationBar: navigationBar,
     floatingActionButton: FloatingActionButton.extended(onPressed: ()=> EventEditorSheet.show(context, household: _selectedHousehold), icon: const Icon(Icons.add), label: const Text('Termin')),
-    drawer: Drawer(child: ListView(padding: EdgeInsets.zero, children:[ DrawerHeader(decoration: BoxDecoration(color: Theme.of(context).colorScheme.primaryContainer), child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children:[ Text(widget.user.email ?? '', style: Theme.of(context).textTheme.titleLarge), const SizedBox(height:8), Text('Rolle: ${membership.roleName}') ])), ListTile(leading: const Icon(Icons.settings_outlined), title: const Text('Einstellungen'), onTap: (){ Navigator.of(context).pop(); Navigator.of(context).push(MaterialPageRoute(builder:(c)=> SettingsPage(household: _selectedHousehold, user: widget.user, membership: membership))); }), ListTile(leading: const Icon(Icons.task_alt_outlined), title: const Text('Aufgaben'), onTap: (){ Navigator.of(context).pop(); Navigator.of(context).push(MaterialPageRoute(builder:(c)=> TaskBoardPage(householdId: _selectedHousehold.id, householdName: _selectedHousehold.name, user: widget.user))); }), ListTile(leading: const Icon(Icons.notifications_active_outlined), title: const Text('Benachrichtigungen')), ])),
+    drawer: Drawer(child: ListView(padding: EdgeInsets.zero, children:[ DrawerHeader(decoration: BoxDecoration(color: Theme.of(context).colorScheme.primaryContainer), child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children:[ Text(widget.user.email ?? '', style: Theme.of(context).textTheme.titleLarge), const SizedBox(height:8), Text('Profil: ${membership.shortLabel}${membership.label != membership.roleName ? ' (${membership.roleName})' : ''}${membership.isAdmin ? ' · Admin' : ''}') ])), ListTile(leading: const Icon(Icons.settings_outlined), title: const Text('Einstellungen'), onTap: (){ Navigator.of(context).pop(); Navigator.of(context).push(MaterialPageRoute(builder:(c)=> SettingsPage(household: _selectedHousehold, user: widget.user, membership: membership))); }), ListTile(leading: const Icon(Icons.task_alt_outlined), title: const Text('Aufgaben'), onTap: (){ Navigator.of(context).pop(); Navigator.of(context).push(MaterialPageRoute(builder:(c)=> TaskBoardPage(householdId: _selectedHousehold.id, householdName: _selectedHousehold.name, user: widget.user))); }), ListTile(leading: const Icon(Icons.notifications_active_outlined), title: const Text('Benachrichtigungen')), ])),
   ); }); }
 }
-
